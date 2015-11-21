@@ -55,7 +55,7 @@ A recent processor that supports
 [SSE3] (https://en.wikipedia.org/wiki/SSE3) is required to
 run **camera**, and support for
 [AVX] (https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) is
-highly recommended for reconstructing 3 and 4D datasets. If you have a
+highly recommended for reconstructing 3D and 4D datasets. If you have a
 processor that supports AVX, you will need to set USE_AVX to **y** in the
 Makefile prior to running _make_ and _make install_ above. Or, you can run
 this to build AVX support in:
