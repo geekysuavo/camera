@@ -1,0 +1,146 @@
+.\" -*- nroff -*-
+.\"
+.\" Copyright (C) 2015 Bradley Worley <geekysuavo@gmail.com>.
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 3 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to:
+.\"
+.\"   Free Software Foundation, Inc.
+.\"   51 Franklin Street, Fifth Floor
+.\"   Boston, MA  02110-1301, USA.
+.\"
+.ds g \" empty
+.ds G \" empty
+.de Tp
+.ie \\n(.$=0:((0\\$1)*2u>(\\n(.1u-\\n(.iu)) .TP
+.el .TP "\\$1"
+..
+.TH CAMERA 1 "1 Dec 2015" "camera version 20151201"
+.SH NAME
+camera \- convex accelerated maximum entropy reconstruction algorithm
+
+.SH SYNOPSIS
+\fBcamera\fR [ \fB-help\fR ]
+.LP
+\fBcamera\fR [\fIOPTIONS\fR]
+
+.SH DESCRIPTION
+.PP
+Estimate the true values of a noisy, nonuniformly sampled (NUS) nuclear
+magnetic resonance (NMR) dataset using the CAMERA, or Convex Accelerated
+Maximum Entropy Reconstruction Algorithm. As opposed to the Cambridge
+MaxEnt algorithm, which uses a modified conjugate gradient method that
+explicitly computes the gradients of both the spectrum and the data,
+CAMERA uses an accelerated first-order method originally published
+by Yu Nesterov.
+.PP
+This utility is meant to be used as part of an nmrPipe pipeline, where it
+is placed between the processing steps of the direct dimension and any
+later indirect dimensions. Input data to CAMERA should already be Fourier
+transformed and phased (dropping imaginaries) in the direct dimension.
+The direct dimension should be the last dimension in the nmrPipe stream.
+For example, 2D data should be Y(X) traces, 3D data should be YZ(X) planes,
+and 4D data should be YZA(X) cubes.
+.PP
+More detailed information on usage, including example processing and
+reconstruction scripts, is available in the CAMERA GitHub repository.
+
+.SH OPTIONS
+A short summary of each option supported by \fBcamera\fR is given below.
+.TP
+\fB\-in\fR
+Specify an input filename. If no filename is specified, \fBcamera\fR will
+attempt to read its data from standard input, \fIi.e.\fR a pipe stream.
+.TP
+\fB\-out\fR
+Specify an output filename. If no filename is specified, \fBcamera\fR will
+attempt to write its data to standard output, \fIi.e.\fR a pipe stream.
+.TP
+\fB\-log\fR
+Specify an output filename for logging detailed reconstruction information.
+If no filename is specified, \fBcamera\fR will simply not print any logging
+information.
+.TP
+\fB\-sched\fR
+Required filename of the sampling schedule used to collect the nonuniform
+dataset being reconstructed. Each line of the schedule file must contain one
+sampled grid index, with multidimensional grid indices represented by
+multiple space-delimited values. Indices should be zero-based, \fIi.e.\fR
+the first index is expected to be zero.
+.TP
+\fB\-dims\fR
+The number of dimensions to reconstruct in the dataset.
+.TP
+\fB\-xN\fR
+The number of complex points along the \fIx\fR-dimension of the dataset.
+.TP
+\fB\-yN\fR
+The number of complex points along the \fIy\fR-dimension of the dataset.
+.TP
+\fB\-zN\fR
+The number of complex points along the \fIz\fR-dimension of the dataset.
+.TP
+\fB\-iters\fR
+The number of reconstruction iterations to execute.
+.TP
+\fB\-threads\fR
+The number of parallel reconstructions to execute. The user should ensure
+that enough physical memory exists to hold the requested number of parallel
+reconstructions.
+.TP
+\fB\-delta\fR
+The background magnitude of the regularization functional, referred to as
+\fIdef\fR in related literature. Larger values result in faster convergence
+at the expense of increased broadband noise.
+.TP
+\fB\-sigma\fR
+An estimate of the root-mean-square noise of the measured time-domain data,
+referred to as \fIaim\fR in related literature. Only utilized in constant-aim
+reconstructions.
+.TP
+\fB\-lambda\fR
+The Lagrange multiplier to set for constant-lambda reconstructions. Setting
+this will override any provided value of \fIsigma\fR above.
+.TP
+\fB\-help\fR
+Display a short help message.
+
+.SH CITING
+If you use \fBcamera\fR in any published work, it is requested that you
+provide attribution to the following peer-reviewed article:
+
+.in +4n
+.nf
+
+\fBBradley Worley\fR,
+Convex Accelerated Maximum Entropy Reconstruction,
+\fIJournal of Magnetic Resonance\fR, 2015, In preparation.
+.fi
+.in
+
+.SH AUTHOR
+Bradley Worley <geekysuavo@gmail.com>
+
+.SH COPYRIGHT
+Copyright \(co 2015 Bradley Worley <geekysuavo@gmail.com>
+.br
+This is free software. You may redistribute copies of it under the terms of
+version 3.0 of the GNU General Public License
+<http://www.gnu.org/licenses/gpl-3.0.txt>.
+There is NO WARRANTY, to the extent permitted by law.
+

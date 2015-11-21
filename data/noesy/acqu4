@@ -1,0 +1,22 @@
+##TITLE= Parameter file, TOPSPIN		Version 3.2
+##JCAMPDX= 5.0
+##DATATYPE= Parameter Values
+##NPOINTS= 33	$$ modification sequence number
+##ORIGIN= Bruker BioSpin GmbH
+##OWNER= nmrsu
+$$ 2015-10-01 18:20:28.279 -0500  nmrsu@nmr700
+$$ /opt/topspin3.2.6/data/nmrsu/nmr/BAW-20151001-ubiquitin/1/acqu4
+$$ process /opt/topspin3.2.6/prog/mod/dataserver
+##$ACQT0= 0
+##$BF1= 176.067945
+##$FnMODE= 5
+##$NUC1= <13C>
+##$NusJSP= 0
+##$NusT2= 1
+##$NusTD= 0
+##$O1= 6162.38
+##$SFO1= 176.07410738
+##$SW= 75
+##$SW_h= 13205.5580190044
+##$TD= 128
+##END=
