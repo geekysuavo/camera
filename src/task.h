@@ -24,25 +24,51 @@
 #ifndef __CAMERA_TASK_H__
 #define __CAMERA_TASK_H__
 
+/* task: data structure for organizing the massive amount of arguments
+ * that must be sent to each task_run() and task_core() function.
+ */
+typedef struct {
+  /* filename and file handle related structure members:
+   *  @fname_in: FIXME
+   *  @fname_out: FIXME
+   *  @fname_log: FIXME
+   *  @fname_sched: FIXME
+   *  @fh_log: FIXME
+   */
+  char *fname_in, *fname_out, *fname_log, *fname_sched;
+  FILE *fh_log;
+
+  /* sampling and weighting structure member:
+   *  @sch: FIXME
+   */
+  sched *sch;
+
+  /* floating-point structure members:
+   *  @delta: FIXME
+   *  @epsilon: FIXME
+   *  @sigma: FIXME
+   *  @lambda: FIXME
+   *  @L: FIXME
+   */
+  hx0 delta, epsilon, sigma, lambda, L;
+
+  /* integer structure members:
+   *  @iters: FIXME
+   *  @n1: FIXME
+   *  @n2: FIXME
+   *  @n3: FIXME
+   */
+  int iters, n1, n2, n3;
+}
+task;
+
 /* function declarations: */
 
-int task_run1 (char *fname_in, char *fname_out,
-               char *fname_log, char *fname_sched,
-               const int iters, const int threads,
-               hx0 delta, hx0 sigma, hx0 lambda,
-               int n);
+task *task_alloc (int argc, char **argv);
 
-int task_run2 (char *fname_in, char *fname_out,
-               char *fname_log, char *fname_sched,
-               const int iters, const int threads,
-               hx0 delta, hx0 sigma, hx0 lambda,
-               int n1, int n2);
+void task_free (task *T);
 
-int task_run3 (char *fname_in, char *fname_out,
-               char *fname_log, char *fname_sched,
-               const int iters, const int threads,
-               hx0 delta, hx0 sigma, hx0 lambda,
-               int n1, int n2, int n3);
+int task_run (task *T);
 
 #endif /* !__CAMERA_TASK_H__ */
 
