@@ -49,3 +49,32 @@ char *strdup (char *s) {
   return sdup;
 }
 
+/* failf_fn(): target of the preprocessor macro failf(), and the function
+ * that does all the dirty work of printing error messages to the terminal.
+ *
+ * arguments:
+ *  @f: source code filename from where the message was printed.
+ *  @l: source code line number at which the message was printed.
+ *  @format: printf-style message formatting string.
+ *  @...: arguments corresponding to flags in @format.
+ */
+void failf_fn (const char *f, const unsigned int l,
+               const char *format, ...) {
+  /* declare required variables:
+   *  @vl: variable arguments list structure.
+   */
+  va_list vl;
+
+  /* print the error message heading. */
+  fprintf(stderr, "Error (%s:%u): ", f, l);
+
+  /* print the error message body. */
+  va_start(vl, format);
+  vfprintf(stderr, format, vl);
+  va_end(vl);
+
+  /* print the error message footing. */
+  fprintf(stderr, "\n");
+  fflush(stderr);
+}
+

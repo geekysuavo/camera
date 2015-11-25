@@ -24,9 +24,17 @@
 #ifndef __CAMERA_UTIL_H__
 #define __CAMERA_UTIL_H__
 
+/* failf(): preprocessor macro function to print an error message to
+ * standard error.
+ */
+#define failf(...)  failf_fn(__FILE__, __LINE__, __VA_ARGS__)
+
 /* function declarations: */
 
 char *strdup (char *s);
+
+void failf_fn (const char *f, const unsigned int l,
+               const char *format, ...);
 
 #endif /* !__CAMERA_UTIL_H__ */
 
