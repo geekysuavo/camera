@@ -54,9 +54,6 @@
  Citation:\n\
    B. Worley, J. Magn. Reson., 2015, In preparation.\n\n"
 
-/* predeclare strdup() for use by main() */
-char *strdup (char *s);
-
 /* main(): application entry point.
  *
  * arguments:
@@ -354,31 +351,5 @@ int main (int argc, char **argv) {
 
   /* return success. */
   return 0;
-}
-
-/* strdup(): duplicate the contents of a string in heap memory.
- *
- * arguments:
- *  @s: pointer to a string to duplicate.
- *
- * returns:
- *  pointer to a copy of the string @s, allocated on the heap.
- */
-char *strdup (char *s) {
-  /* declare required variables:
-   *  @sdup: pointer to the duplicated string.
-   */
-  char *sdup;
-
-  /* allocate a new character pointer of sufficient length. */
-  sdup = (char*) malloc((strlen(s) + 2) * sizeof(char));
-  if (!sdup)
-    return NULL;
-
-  /* copy the contents of the input string into the new pointer. */
-  strcpy(sdup, s);
-
-  /* return the newly allocated and prepared character pointer. */
-  return sdup;
 }
 

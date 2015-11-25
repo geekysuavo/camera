@@ -20,26 +20,32 @@
  *   Boston, MA  02110-1301, USA.
  */
 
-/* include standard c library headers. */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+/* include the core camera header. */
+#include "camera.h"
 
-/* include the openmp library header. */
-#include <omp.h>
+/* strdup(): duplicate the contents of a string in heap memory.
+ *
+ * arguments:
+ *  @s: pointer to a string to duplicate.
+ *
+ * returns:
+ *  pointer to a copy of the string @s, allocated on the heap.
+ */
+char *strdup (char *s) {
+  /* declare required variables:
+   *  @sdup: pointer to the duplicated string.
+   */
+  char *sdup;
 
-/* define 'pi', if necessary. */
-#ifndef M_PI
-#define M_PI 3.1415926539
-#endif
+  /* allocate a new character pointer of sufficient length. */
+  sdup = (char*) malloc((strlen(s) + 2) * sizeof(char));
+  if (!sdup)
+    return NULL;
 
-/* include all compiled object headers. */
-#include "hx.h"
-#include "arr.h"
-#include "fft.h"
-#include "sched.h"
-#include "pipe.h"
-#include "task.h"
-#include "util.h"
+  /* copy the contents of the input string into the new pointer. */
+  strcpy(sdup, s);
+
+  /* return the newly allocated and prepared character pointer. */
+  return sdup;
+}
 

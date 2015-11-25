@@ -20,26 +20,13 @@
  *   Boston, MA  02110-1301, USA.
  */
 
-/* include standard c library headers. */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+/* ensure once-only inclusion. */
+#ifndef __CAMERA_UTIL_H__
+#define __CAMERA_UTIL_H__
 
-/* include the openmp library header. */
-#include <omp.h>
+/* function declarations: */
 
-/* define 'pi', if necessary. */
-#ifndef M_PI
-#define M_PI 3.1415926539
-#endif
+char *strdup (char *s);
 
-/* include all compiled object headers. */
-#include "hx.h"
-#include "arr.h"
-#include "fft.h"
-#include "sched.h"
-#include "pipe.h"
-#include "task.h"
-#include "util.h"
+#endif /* !__CAMERA_UTIL_H__ */
 
