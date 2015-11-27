@@ -30,8 +30,11 @@ rival those of RNMRTK MaxEnt and NESTA-NMR.
 
 ### Reconstructing NMR data
 
-Example scripts for converting, processing and reconstructing 2D, 3D and 4D
-Bruker NMR data are provided in the [data](data/) subdirectory.
+The **camera** algorithm and software supports all the trimmings of MEM,
+including interpolation, extrapolation, linewdith deconvolution and
+_J_-coupling deconvolution. Example scripts for converting, processing
+and reconstructing 2D, 3D and 4D Bruker NMR data are provided
+in the [data](data/) subdirectory.
 
 ### Installing and Running
 
