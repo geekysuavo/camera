@@ -1,6 +1,6 @@
 % camera: barebones 1d camera reconstruction function.
 function [x, fvals] = ...
-camera (b, sched, sigma, lambda, defs, Mout, Min, Wfn)
+camera (b, sched, sigma, lambda, defs, Mout, Min, nzf, Wfn)
   % check for a minimum number of arguments.
   if (nargin < 2)
     error('at least two arguments required');
@@ -14,7 +14,6 @@ camera (b, sched, sigma, lambda, defs, Mout, Min, Wfn)
   % store the input vector lengths.
   n = length(sched);
   N0 = length(b);
-  N = 2 * N0;
 
   % check for an estimated noise argument.
   if (nargin < 3 || isempty(sigma))
@@ -46,11 +45,20 @@ camera (b, sched, sigma, lambda, defs, Mout, Min, Wfn)
     Min = 500;
   end
 
+  % check for a zero-fill count argument.
+  if (nargin < 8 || isempty(nzf))
+    % none supplied, use a default value.
+    nzf = 1;
+  end
+
   % check for a weight argument.
-  if (nargin < 8 || isempty(Wfn))
+  if (nargin < 9 || isempty(Wfn))
     % none supplied, use a default value.
     Wfn = @(idx) 1;
   end
+
+  % set the output size.
+  N = (2 ^ nzf) * N0;
 
   % build a sampling vector.
   K = zeros(N, 1);
@@ -134,5 +142,5 @@ camera (b, sched, sigma, lambda, defs, Mout, Min, Wfn)
   end
 
   % truncate the reconstructed vector.
-  x(N0 + 1 : end) = [];
+  x(N / 2 + 1 : end) = [];
 end
