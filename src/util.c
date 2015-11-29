@@ -43,6 +43,12 @@
    -xN       Final length of the x-dimension.                   [0]\n\
    -yN       Final length of the y-dimension.                   [0]\n\
    -zN       Final length of the z-dimension.                   [0]\n\
+   -xJ       Deconvolution J-coupling of the x-dimension.       [0]\n\
+   -yJ       Deconvolution J-coupling of the y-dimension.       [0]\n\
+   -zJ       Deconvolution J-coupling of the z-dimension.       [0]\n\
+   -xW       Deconvolution linewidth of the x-dimension.        [0]\n\
+   -yW       Deconvolution linewidth of the y-dimension.        [0]\n\
+   -zW       Deconvolution linewidth of the z-dimension.        [0]\n\
    -iters    Number of iterations to perform.                 [250]\n\
    -threads  Number of parallel threads to execute.             [1]\n\
    -delta    Regularization functional background value.      [1.0]\n\
