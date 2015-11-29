@@ -64,7 +64,7 @@ pipe *pipesrc_open (char *fname, sched *sch) {
   /* check that the input file handle is valid. */
   if (!P->fh) {
     /* if not, output an error message and return null. */
-    fprintf(stderr, "Error: failed to open file '%s'\n", P->fname);
+    failf("failed to open file '%s'", P->fname);
     pipe_close(P);
     return NULL;
   }
@@ -81,7 +81,7 @@ pipe *pipesrc_open (char *fname, sched *sch) {
   /* attempt to read the pipe header data from the file handle. */
   if (fread(bytes, sizeof(char), n_bytes, P->fh) != n_bytes) {
     /* if unsuccessful, output an error message and return null. */
-    fprintf(stderr, "Error: failed to read pipe header\n");
+    failf("failed to read pipe header");
     pipe_close(P);
     return NULL;
   }
@@ -138,7 +138,7 @@ pipe *pipesink_open (char *fname, struct pipe_hdr *hdr) {
   /* check that the output file handle is valid. */
   if (!P->fh) {
     /* if not, output an error message and return null. */
-    fprintf(stderr, "Error: failed to open file '%s'\n", P->fname);
+    failf("failed to open file '%s'", P->fname);
     pipe_close(P);
     return NULL;
   }
@@ -147,7 +147,7 @@ pipe *pipesink_open (char *fname, struct pipe_hdr *hdr) {
   n_hdr = sizeof(struct pipe_hdr) / sizeof(float);
   if (fwrite(&P->hdr, sizeof(float), n_hdr, P->fh) != n_hdr) {
     /* if unsuccessul, output an error message and return null. */
-    fprintf(stderr, "Error: failed to write pipe header\n");
+    failf("failed to write pipe header");
     pipe_close(P);
     return NULL;
   }

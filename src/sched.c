@@ -95,7 +95,7 @@ sched *sched_alloc1 (const char *fname, int n) {
         /* check that the grid index is in bounds. */
         if (i < 0 || i >= n) {
           /* if not, output an error message and return null. */
-          fprintf(stderr, "Error: grid index out of bounds\n");
+          failf("grid index out of bounds");
           return NULL;
         }
 
@@ -161,7 +161,7 @@ sched *sched_alloc2 (const char *fname, int n1, int n2) {
         if (i1 < 0 || i1 >= n1 ||
             i2 < 0 || i2 >= n2) {
           /* if not, output an error message and return null. */
-          fprintf(stderr, "Error: grid index out of bounds\n");
+          failf("grid index out of bounds");
           return NULL;
         }
 
@@ -230,7 +230,7 @@ sched *sched_alloc3 (const char *fname, int n1, int n2, int n3) {
             i2 < 0 || i2 >= n2 ||
             i3 < 0 || i3 >= n3) {
           /* if not, output an error message and return null. */
-          fprintf(stderr, "Error: grid index out of bounds\n");
+          failf("grid index out of bounds");
           return NULL;
         }
 

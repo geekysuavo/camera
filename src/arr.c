@@ -89,7 +89,7 @@ arr1 *arr_alloc1 (int n1, int n2, int n3) {
   /* check that the array size is a power of two. */
   if (l < 0) {
     /* if not, output an error message and return null. */
-    fprintf(stderr, "Error: size '%d' not a power of two\n", n1);
+    failf("size '%d' not a power of two", n1);
     return NULL;
   }
 
@@ -138,7 +138,7 @@ arr2 *arr_alloc2 (int n1, int n2, int n3) {
   /* check that all array sizes are powers of two. */
   if (l1 < 0 || l2 < 0) {
     /* if not, output an error message and return null. */
-    fprintf(stderr, "Error: size '%dx%d' not a power of two\n", n1, n2);
+    failf("size '%dx%d' not a power of two", n1, n2);
     return NULL;
   }
 
@@ -196,11 +196,8 @@ arr3 *arr_alloc3 (int n1, int n2, int n3) {
 
   /* check that all array sizes are powers of two. */
   if (l1 < 0 || l2 < 0 || l3 < 0) {
-    /* if not, output an error message... */
-    fprintf(stderr, "Error: size '%dx%dx%d' not a power of two\n",
-            n1, n2, n3);
-
-    /* ... and return null. */
+    /* if not, output an error message and return null. */
+    failf("size '%dx%dx%d' not a power of two", n1, n2, n3);
     return NULL;
   }
 
