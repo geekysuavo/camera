@@ -28,9 +28,11 @@
  */
 typedef struct {
   /* @idx: array of sampled grid indices.
+   * @w: array of deconvolution weights.
    * @n: number of sampled grid indices.
    */
   int *idx;
+  hx0 *w;
   int n;
 }
 sched;
@@ -41,6 +43,11 @@ sched *sched_alloc (const char *fname, int dims,
                     int n1, int n2, int n3);
 
 void sched_free (sched *sch);
+
+int sched_kernel (sched *sch, int dims,
+                  int n1, hx0 j1, hx0 w1, hx0 sw1,
+                  int n2, hx0 j2, hx0 w2, hx0 sw2,
+                  int n3, hx0 j3, hx0 w3, hx0 sw3);
 
 #endif /* !__CAMERA_SCHED_H__ */
 

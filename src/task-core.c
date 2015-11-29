@@ -85,11 +85,14 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
    *  @fobj: current value of the objective function.
    *  @i: general-purpose loop counter.
    *  @iter: iteration loop counter.
-   *  @nS: schedule index count.
-   *  @S: schedule index array.
+   *  @n: schedule index count.
+   *  @N: array point count.
+   *  @K: schedule index array.
+   *  @W: schedule weight array.
    */
   hx0 ly, lz, alpha, tau, kf, fobj = 0.0f;
-  int i, iter, nS, *S;
+  int i, iter, n, N, *K;
+  hx0 *W;
 
   /* compute the inverse Lipschitz constant. */
   const hx0 Linv = 1.0f / L;
@@ -98,9 +101,13 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
   ARR_COPY(D)(x, b);
   ARR_ZERO(D)(h);
 
-  /* initialize the schedule variables. */
-  S = sch->idx;
-  nS = sch->n;
+  /* initialize the schedule index and weight variables. */
+  K = sch->idx;
+  W = sch->w;
+
+  /* initialize the schedule and array sizes. */
+  n = sch->n;
+  N = g->n;
 
   /* loop over the number of iterations. */
   for (iter = 1; iter <= iters; iter++) {
@@ -115,12 +122,12 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
     /* check if the objective function value is required. */
     if (flog) {
       /* compute the current objective. */
-      for (i = 0, fobj = 0.0f; i < g->n; i++)
+      for (i = 0, fobj = 0.0f; i < N; i++)
         fobj += HX_FUNC(D)(g->x[i], L);
     }
 
     /* calculate the frequency-domain gradient. */
-    for (i = 0; i < g->n; i++)
+    for (i = 0; i < N; i++)
       g->x[i] = HX_GRAD(D)(g->x[i], L);
 
     /* compute the time-domain gradient. */
@@ -129,8 +136,9 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
     /* determine whether constant-aim mode is enabled. */
     if (lmb <= 0.0f) {
       /* compute the sum of squares portion of the @y Lagrange multiplier. */
-      for (i = 0, ly = 0.0f; i < nS; i++)
-        ly += HX_SUMSQ(D)(b->x[S[i]] - x->x[S[i]] + Linv * g->x[S[i]]);
+      for (i = 0, ly = 0.0f; i < n; i++)
+        ly += HX_SUMSQ(D)(b->x[K[i]] - W[i] * x->x[K[i]]
+                              + Linv * W[i] * g->x[K[i]]);
 
       /* finish computing the @y Lagrange multiplier. */
       ly = (L / eps) * hx_sqrt0(ly) - L;
@@ -140,63 +148,56 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
       ly = lmb;
     }
 
-    /* determine whether the @y-update constraint is active. */
-    if (ly <= 0.0f) {
-      /* inactive. */
-      for (i = 0; i < g->n; i++)
-        y->x[i] = x->x[i] - Linv * g->x[i];
-    }
-    else {
-      /* active. compute the right half of the update. */
-      kf = Linv * ly;
-      for (i = 0; i < g->n; i++)
-        y->x[i] = x->x[i] + kf * b->x[i] - Linv * g->x[i];
+    /* compute the unconstrained part of the @y update. */
+    for (i = 0; i < N; i++)
+      y->x[i] = x->x[i] - Linv * g->x[i];
 
-      /* compute the left half of the update. */
-      kf = 1.0f - ly / (ly + L);
-      for (i = 0; i < nS; i++)
-        y->x[S[i]] *= kf;
+    /* determine whether to constrain the @y update. */
+    if (ly > 0.0f) {
+      /* yes. compute the constraint contributions to the update. */
+      kf = Linv * ly;
+      for (i = 0; i < n; i++) {
+        y->x[K[i]] += kf * W[i] * b->x[K[i]];
+        y->x[K[i]] /= (1.0f + kf * W[i] * W[i]);
+      }
     }
 
     /* update the weighted sum of prior gradients. */
-    for (i = 0; i < g->n; i++)
+    for (i = 0; i < N; i++)
       h->x[i] += alpha * g->x[i];
 
     /* determine whether constant-aim mode is enabled. */
     if (lmb <= 0.0f) {
       /* compute the sum of squares portion of the @z Lagrange multiplier. */
-      for (i = 0, lz = 0.0f; i < nS; i++)
-        lz += HX_SUMSQ(D)(h->x[S[i]]);
+      for (i = 0, lz = 0.0f; i < n; i++)
+        lz += HX_SUMSQ(D)((1.0f - W[i]) * b->x[K[i]]
+                          + Linv * W[i] * h->x[K[i]]);
 
       /* finish computing the @z Lagrange multiplier. */
-      lz = (L / eps) * hx_sqrt0(Linv * Linv * lz) - L;
+      lz = (L / eps) * hx_sqrt0(lz) - L;
     }
     else {
       /* use a constant Lagrange multiplier. */
       lz = lmb;
     }
 
-    /* determine whether the @z-update constraint is active. */
-    if (lz <= 0.0f) {
-      /* inactive. */
-      for (i = 0; i < g->n; i++)
-        z->x[i] = b->x[i] - Linv * h->x[i];
-    }
-    else {
-      /* active. compute the right half of the update. */
-      kf = Linv * lz;
-      for (i = 0; i < g->n; i++)
-        z->x[i] = b->x[i] + kf * b->x[i] - Linv * h->x[i];
+    /* compute the unconstrained part of the @z update. */
+    for (i = 0; i < N; i++)
+      z->x[i] = b->x[i] - Linv * h->x[i];
 
-      /* compute the left half of the update. */
-      kf = 1.0f - lz / (lz + L);
-      for (i = 0; i < nS; i++)
-        z->x[S[i]] *= kf;
+    /* determine whether to constrain the @z update. */
+    if (lz > 0.0f) {
+      /* yes. compute the constraint contributions to the update. */
+      kf = Linv * lz;
+      for (i = 0; i < n; i++) {
+        z->x[K[i]] += kf * W[i] * b->x[K[i]];
+        z->x[K[i]] /= (1.0f + kf * W[i] * W[i]);
+      }
     }
 
     /* compute the new coupled time-domain estimate. */
     kf = 1.0f - tau;
-    for (i = 0; i < x->n; i++)
+    for (i = 0; i < N; i++)
       x->x[i] = tau * z->x[i] + kf * y->x[i];
 
     /* output a log message, if necessary. */

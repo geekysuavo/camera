@@ -47,6 +47,7 @@ sched *sched_init (void) {
 
   /* initialize the contents of the structure. */
   sch->idx = NULL;
+  sch->w = NULL;
   sch->n = 0;
 
   /* return the allocated and prepared structure pointer. */
@@ -306,5 +307,84 @@ void sched_free (sched *sch) {
   /* free the structure pointer. */
   free(sch);
   sch = NULL;
+}
+
+/* sched_kernel(): compute a set of convolution kernel coefficients for
+ * use during reconstruction.
+ *
+ * arguments:
+ *  @sch: pointer to the schedule structure pointer.
+ *  @dims: number of grid dimensions.
+ *  @n1, @j1, @w1, @sw1: first-dimension parameters.
+ *  @n2, @j2, @w2, @sw2: second-dimension parameters.
+ *  @n3, @j3, @w3, @sw3: third-dimension parameters.
+ *
+ * returns:
+ *  integer indicating whether (1) or not (0) the computation succeeded.
+ */
+int sched_kernel (sched *sch, int dims,
+                  int n1, hx0 j1, hx0 w1, hx0 sw1,
+                  int n2, hx0 j2, hx0 w2, hx0 sw2,
+                  int n3, hx0 j3, hx0 w3, hx0 sw3) {
+  /* declare required variables:
+   *  @i: general-purpose loop counter.
+   *  @i1, @i2, @i3: unpacked grid indices.
+   *  @dt1, @dt2, @dt3: dwell times.
+   */
+  int i, i1, i2, i3;
+  hx0 dt1, dt2, dt3;
+
+  /* return if the structure pointer is null. */
+  if (!sch)
+    return 0;
+
+  /* allocate an array of convolution coefficients. */
+  sch->w = (hx0*) calloc(sch->n, sizeof(hx0));
+  if (!sch->w)
+    return 0;
+
+  /* compute the dwell times from the spectral widths. */
+  dt1 = (sw1 == 0.0f ? 1.0f : 1.0f / sw1);
+  dt2 = (sw2 == 0.0f ? 1.0f : 1.0f / sw2);
+  dt3 = (sw3 == 0.0f ? 1.0f : 1.0f / sw3);
+
+  /* loop over the array of coefficients. */
+  for (i = 0; i < sch->n; i++) {
+    /* initialize the coefficient. */
+    sch->w[i] = 1.0f;
+
+    /* check if the schedule has at least one dimension. */
+    if (dims >= 1) {
+      /* compute the first-dimension index. */
+      i1 = i % n1;
+
+      /* multiply in the first-dimension contributions. */
+      sch->w[i] *= cos(M_PI * dt1 * ((hx0) i1));
+      sch->w[i] *= exp(-w1 * dt1 * ((hx0) i1));
+    }
+
+    /* check if the schedule has at least two dimensions. */
+    if (dims >= 2) {
+      /* compute the second-dimension index. */
+      i2 = ((i - i1) / n1) % n2;
+
+      /* multiply in the second-dimension contributions. */
+      sch->w[i] *= cos(M_PI * dt2 * ((hx0) i2));
+      sch->w[i] *= exp(-w2 * dt2 * ((hx0) i2));
+    }
+
+    /* check if the schedule has three dimensions. */
+    if (dims >= 3) {
+      /* compute the second-dimension index. */
+      i3 = (i - i1 - n1 * i2) / (n1 * n2);
+
+      /* multiply in the second-dimension contributions. */
+      sch->w[i] *= cos(M_PI * dt3 * ((hx0) i3));
+      sch->w[i] *= exp(-w3 * dt3 * ((hx0) i3));
+    }
+  }
+
+  /* return success. */
+  return 1;
 }
 

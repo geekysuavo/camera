@@ -368,6 +368,19 @@ int task_run (task *T) {
     return 0;
   }
 
+  /* compute the convolution coefficients. */
+  status = sched_kernel(T->sch, T->dims,
+                        T->nx, T->jx, T->wx, T->Pin->hdr.sw_f1,
+                        T->ny, T->jy, T->wy, T->Pin->hdr.sw_f3,
+                        T->nz, T->jz, T->wz, T->Pin->hdr.sw_f4);
+
+  /* check whether the computation succeeded. */
+  if (!status) {
+    /* if unsuccessful, output an error message and return failure. */
+    failf("failed to compute convolution weights");
+    return 0;
+  }
+
   /* set the number of threads to be used during reconstruction. */
   omp_set_num_threads(T->threads);
 
