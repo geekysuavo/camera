@@ -178,6 +178,54 @@ task *task_alloc (int argc, char **argv) {
         return NULL;
       }
     }
+    else if (strcmp(argv[i], "-xJ") == 0) {
+      /* attempt to parse the first-dimension coupling. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->jx) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'xJ' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-yJ") == 0) {
+      /* attempt to parse the second-dimension coupling. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->jy) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'yJ' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-zJ") == 0) {
+      /* attempt to parse the third-dimension coupling. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->jz) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'zJ' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-xW") == 0) {
+      /* attempt to parse the first-dimension linewidth. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->wx) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'xW' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-yW") == 0) {
+      /* attempt to parse the second-dimension linewidth. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->wy) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'yW' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-zW") == 0) {
+      /* attempt to parse the third-dimension linewidth. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->wz) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'zW' argument requires a value");
+        return NULL;
+      }
+    }
     else if (strcmp(argv[i], "-iters") == 0) {
       /* attempt to parse the iteration count. */
       if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->iters) != 1) {
