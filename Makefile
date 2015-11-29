@@ -32,7 +32,7 @@ BIN=bin/camera
 MAN=man/camera.1
 
 # SRC, OBJ: basenames and filenames of output object files.
-SRC=hx arr fft1 fft2 fft3 pipe task1 task2 task3 sched util camera
+SRC=hx arr fft1 fft2 fft3 pipe task sched util camera
 OBJ=$(addsuffix .o,$(addprefix src/,$(SRC)))
 
 # SUFFIXES: registered filename suffixes for implicit make rules.

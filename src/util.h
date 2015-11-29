@@ -33,6 +33,8 @@
 
 char *strdup (char *s);
 
+void usagef (void);
+
 void failf_fn (const char *f, const unsigned int l,
                const char *format, ...);
 

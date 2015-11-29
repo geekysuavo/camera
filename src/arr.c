@@ -67,13 +67,15 @@ int arr_binary_logn (int n) {
 /* arr_alloc1(): allocate a new one-dimensional hypercomplex array.
  *
  * arguments:
- *  @n: size of the array. must be a power of two.
+ *  @n1: size of the array. must be a power of two.
+ *  @n2: unused.
+ *  @n3: unused.
  *
  * returns:
  *  pointer to a newly allocated one-dimensional hypercomplex
  *  array structure, or NULL on failure.
  */
-arr1 *arr_alloc1 (int n) {
+arr1 *arr_alloc1 (int n1, int n2, int n3) {
   /* declare required variables:
    *  @a: pointer to the newly allocated structure.
    *  @l: base-two logarithm of the array size.
@@ -82,12 +84,12 @@ arr1 *arr_alloc1 (int n) {
   int l;
 
   /* compute the base-two logarithm of the array size. */
-  l = arr_binary_logn(n);
+  l = arr_binary_logn(n1);
 
   /* check that the array size is a power of two. */
   if (l < 0) {
     /* if not, output an error message and return null. */
-    fprintf(stderr, "Error: size '%d' not a power of two\n", n);
+    fprintf(stderr, "Error: size '%d' not a power of two\n", n1);
     return NULL;
   }
 
@@ -97,7 +99,7 @@ arr1 *arr_alloc1 (int n) {
     return NULL;
 
   /* store the array sizes in the structure. */
-  a->n = n;
+  a->n = n1;
   a->l = l;
 
   /* allocate a new array of coefficients. */
@@ -114,12 +116,13 @@ arr1 *arr_alloc1 (int n) {
  * arguments:
  *  @n1: first-dimension size of the array. must be a power of two.
  *  @n2: second-dimension size of the array. must be a power of two.
+ *  @n3: unused.
  *
  * returns:
  *  pointer to a newly allocated two-dimensional hypercomplex
  *  array structure, or NULL on failure.
  */
-arr2 *arr_alloc2 (int n1, int n2) {
+arr2 *arr_alloc2 (int n1, int n2, int n3) {
   /* declare required variables:
    *  @l1: base-two logarithm of the array first-dimension size.
    *  @l2: base-two logarithm of the array second-dimension size.

@@ -29,36 +29,43 @@
  */
 typedef struct {
   /* filename and file handle related structure members:
-   *  @fname_in: FIXME
-   *  @fname_out: FIXME
-   *  @fname_log: FIXME
-   *  @fname_sched: FIXME
-   *  @fh_log: FIXME
+   *  @fname_in: input filename string, or NULL if reading from stdin.
+   *  @fname_out: output filename string, or NULL if writing to stdout.
+   *  @fname_log: output log filename string, or NULL if not logging.
+   *  @fname_sched: required sampling schedule filename string.
+   *  @fh_log: logging file handle.
    */
   char *fname_in, *fname_out, *fname_log, *fname_sched;
   FILE *fh_log;
 
-  /* sampling and weighting structure member:
-   *  @sch: FIXME
+  /* spectral data input/output related structure members:
+   *  @Pin: input pipe source structure pointer.
+   *  @Pout: output pipe source structure pointer.
+   *  @sch: schedule data structure pointer.
    */
+  pipe *Pin, *Pout;
   sched *sch;
 
   /* floating-point structure members:
-   *  @delta: FIXME
-   *  @epsilon: FIXME
-   *  @sigma: FIXME
-   *  @lambda: FIXME
-   *  @L: FIXME
+   *  @epsilon: noise power estimate for constant-aim mode.
+   *  @delta: default parameter for the regularization functional.
+   *  @sigma: noise amplitude estimate for constant-aim mode.
+   *  @lambda: Lagrange multiplier for constant-lambda mode.
+   *  @L: Lipschitz constant for the regularization functional.
+   *  @wx, @wy, @wz: exponential deconvolution linewidths.
+   *  @jx, @jy, @jz: J-coupling deconvolution frequencies.
    */
-  hx0 delta, epsilon, sigma, lambda, L;
+  hx0 epsilon, delta, sigma, lambda, L;
+  hx0 wx, wy, wz, jx, jy, jz;
 
   /* integer structure members:
-   *  @iters: FIXME
-   *  @n1: FIXME
-   *  @n2: FIXME
-   *  @n3: FIXME
+   *  @help: whether or not to print the usage message.
+   *  @dims: number of dimensions to reconstruct.
+   *  @iters: number of reconstruction iterations to perform.
+   *  @threads: number of parallel reconstructions to perform.
+   *  @nx, @ny, @nz: reconstruction array sizes.
    */
-  int iters, n1, n2, n3;
+  int help, dims, iters, threads, nx, ny, nz;
 }
 task;
 

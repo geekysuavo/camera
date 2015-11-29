@@ -20,190 +20,468 @@
  *   Boston, MA  02110-1301, USA.
  */
 
-/* define a macro to concatenate tokens together. */
-#define CONCAT(a,b) a ## b
+/* include the core camera header. */
+#include "camera.h"
 
-/* define a set of substitutions to make based on the value of TASK_DIMS
- * that has been define'd by the including source file:
- *  @TASK_CORE: name of the core reconstruction function.
- *  @ARR: data type of the input multidimensional arrays.
- *  @ARR_COPY: name of the array copy function.
- *  @ARR_ZERO: name of the array zero function.
- *  @HX_SUMSQ: name of the scalar squared norm function.
- *  @HX_FUNC: name of the scalar objective function.
- *  @HX_GRAD: name of the scalar gradient function.
- *  @FFT: name of the forward Fourier transform function.
- *  @IFFT: name of the backward Fourier transform function.
- */
-#define TASK_CORE(dims)  CONCAT(task_core, dims)
-#define ARR(dims)        CONCAT(arr, dims)
-#define ARR_COPY(dims)   CONCAT(arr_copy, dims)
-#define ARR_ZERO(dims)   CONCAT(arr_zero, dims)
-#define HX_SUMSQ(dims)   CONCAT(hx_sumsq, dims)
-#define HX_FUNC(dims)    CONCAT(hx_func, dims)
-#define HX_GRAD(dims)    CONCAT(hx_grad, dims)
-#define FFT(dims)        CONCAT(fft, dims)
-#define IFFT(dims)       CONCAT(ifft, dims)
+/* construct the one-dimensional reconstruction core function. */
+#define D 1
+#include "task-core.c"
+#undef D
 
-/* task_core[123](): reconstruct an n-dimensional hypercomplex array,
- * given a complete set of pre-prepared data structures.
+/* construct the two-dimensional reconstruction core function. */
+#define D 2
+#include "task-core.c"
+#undef D
+
+/* construct the three-dimensional reconstruction core function. */
+#define D 3
+#include "task-core.c"
+#undef D
+
+/* task_alloc(): allocate and initialize a task structure pointer based
+ * on an argument string array.
  *
  * arguments:
- *  @b: input array of measured data, infilled with zeros.
- *  @x: output array of reconstructed values.
- *  @y: array to hold gradient descent updates.
- *  @z: array to hold mirror descent updates.
- *  @g: array to hold computed gradients.
- *  @h: array to hold weighted gradient sums.
- *  @sch: pointer to the schedule data structure.
- *  @iters: number of iterations to perform.
- *  @L: Lipschitz constant for regularization.
- *  @eps: measured data inequality tolerance.
- *  @lmb: constant-lambda value, or zero.
- *  @flog: logging output file handle, or null.
- *  @ilog: slice index for logging.
+ *  @argc: size of the argument string array.
+ *  @argv: values in the argument string array.
+ *
+ * returns:
+ *  newly allocated task structure pointer.
  */
-void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
-                   ARR(D) *z, ARR(D) *g, ARR(D) *h,
-                   sched *sch, const int iters, const hx0 L,
-                   const hx0 eps, const hx0 lmb,
-                   FILE *flog, const int ilog) {
-  /* declare required local variables:
-   *  @ly, @lz: Lagrange multipliers for @y and @z updates.
-   *  @alpha, @tau: coupling constants for acceleration.
-   *  @kf: variable used for scaling in array updates.
-   *  @fobj: current value of the objective function.
+task *task_alloc (int argc, char **argv) {
+  /* declare required variables:
+   *  @T: task structure pointer to allocate and initialize.
    *  @i: general-purpose loop counter.
-   *  @iter: iteration loop counter.
-   *  @nS: schedule index count.
-   *  @S: schedule index array.
    */
-  hx0 ly, lz, alpha, tau, kf, fobj = 0.0f;
-  int i, iter, nS, *S;
+  task *T;
+  int i;
 
-  /* compute the inverse Lipschitz constant. */
-  const hx0 Linv = 1.0f / L;
+  /* allocate a new structure pointer. */
+  T = (task*) malloc(sizeof(task));
+  if (!T)
+    return NULL;
 
-  /* initialize the output and weighted gradient arrays. */
-  ARR_COPY(D)(x, b);
-  ARR_ZERO(D)(h);
+  /* initialize the filename strings. */
+  T->fname_in = NULL;
+  T->fname_out = NULL;
+  T->fname_log = NULL;
+  T->fname_sched = strdup("nuslist");
 
-  /* initialize the schedule variables. */
-  S = sch->idx;
-  nS = sch->n;
+  /* initialize the logging file handle. */
+  T->fh_log = NULL;
 
-  /* loop over the number of iterations. */
-  for (iter = 1; iter <= iters; iter++) {
-    /* compute the coupling constants of the current iteration. */
-    alpha = 0.5f * ((hx0) (iter + 1));
-    tau = 2.0f / ((hx0) (iter + 3));
+  /* initialize the input/output data structure pointers. */
+  T->Pin = NULL;
+  T->Pout = NULL;
+  T->sch = NULL;
 
-    /* compute the current frequency-domain estimate. */
-    ARR_COPY(D)(g, x);
-    FFT(D)(g);
+  /* initialize the integer variables. */
+  T->nx = 0;
+  T->ny = 0;
+  T->nz = 0;
+  T->help = 0;
+  T->dims = 1;
+  T->iters = 250;
+  T->threads = 1;
 
-    /* check if the objective function value is required. */
-    if (flog) {
-      /* compute the current objective. */
-      for (i = 0, fobj = 0.0f; i < g->n; i++)
-        fobj += HX_FUNC(D)(g->x[i], L);
+  /* initialize the float variables. */
+  T->delta = 1.0f;
+  T->sigma = 1.0f;
+  T->lambda = 0.0f;
+  T->wx = 0.0f;
+  T->wy = 0.0f;
+  T->wz = 0.0f;
+  T->jx = 0.0f;
+  T->jy = 0.0f;
+  T->jz = 0.0f;
+
+  /* loop over all command-line arguments. */
+  i = 1;
+  while (i < argc) {
+    /* check for a recognized argument flag. */
+    if (strcmp(argv[i], "-in") == 0) {
+      /* check that the flag is followed by another argument. */
+      if (i + 1 >= argc) {
+        /* if not, output an error message and return failure. */
+        failf("'in' argument requires a value");
+        return NULL;
+      }
+
+      /* duplicate the input filename string. */
+      T->fname_in = strdup(argv[++i]);
     }
+    else if (strcmp(argv[i], "-out") == 0) {
+      /* check that the flag is followed by another argument. */
+      if (i + 1 >= argc) {
+        /* if not, output an error message and return failure. */
+        failf("'out' argument requires a value");
+        return NULL;
+      }
 
-    /* calculate the frequency-domain gradient. */
-    for (i = 0; i < g->n; i++)
-      g->x[i] = HX_GRAD(D)(g->x[i], L);
+      /* duplicate the output filename string. */
+      T->fname_out = strdup(argv[++i]);
+    }
+    else if (strcmp(argv[i], "-log") == 0) {
+      /* check that the flag is followed by another argument. */
+      if (i + 1 >= argc) {
+        /* if not, output an error message and return failure. */
+        failf("'log' argument requires a value");
+        return NULL;
+      }
 
-    /* compute the time-domain gradient. */
-    IFFT(D)(g);
+      /* duplicate the log filename string. */
+      T->fname_log = strdup(argv[++i]);
+    }
+    else if (strcmp(argv[i], "-sched") == 0) {
+      /* check that the flag is followed by another argument. */
+      if (i + 1 >= argc) {
+        /* if not, output an error message and return failure. */
+        failf("'sched' argument requires a value");
+        return NULL;
+      }
 
-    /* determine whether constant-aim mode is enabled. */
-    if (lmb <= 0.0f) {
-      /* compute the sum of squares portion of the @y Lagrange multiplier. */
-      for (i = 0, ly = 0.0f; i < nS; i++)
-        ly += HX_SUMSQ(D)(b->x[S[i]] - x->x[S[i]] + Linv * g->x[S[i]]);
-
-      /* finish computing the @y Lagrange multiplier. */
-      ly = (L / eps) * hx_sqrt0(ly) - L;
+      /* duplicate the schedule filename string after
+       * freeing the previously set value.
+       */
+      free(T->fname_sched);
+      T->fname_sched = strdup(argv[++i]);
+    }
+    else if (strcmp(argv[i], "-dims") == 0) {
+      /* attempt to parse the dimension count. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->dims) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'dims' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-xN") == 0) {
+      /* attempt to parse the first-dimension size. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->nx) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'xN' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-yN") == 0) {
+      /* attempt to parse the second-dimension size. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->ny) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'yN' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-zN") == 0) {
+      /* attempt to parse the third-dimension size. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->nz) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'zN' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-iters") == 0) {
+      /* attempt to parse the iteration count. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->iters) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'iters' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-threads") == 0) {
+      /* attempt to parse the thread count. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->threads) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'threads' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-delta") == 0) {
+      /* attempt to parse the regularization background value. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->delta) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'delta' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-sigma") == 0) {
+      /* attempt to parse the reconstruction noise estimate. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->sigma) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'sigma' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-lambda") == 0) {
+      /* attempt to parse the reconstruction Lagrange multiplier. */
+      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->lambda) != 1) {
+        /* if unsuccessful, output an error message and return failure. */
+        failf("'lambda' argument requires a value");
+        return NULL;
+      }
+    }
+    else if (strcmp(argv[i], "-help") == 0) {
+      /* output the usage message to standard error, because the '-help'
+       * flag has been specified.
+       */
+      T->help = 1;
     }
     else {
-      /* use a constant Lagrange multiplier. */
-      ly = lmb;
+      /* output an error message and return failure, because this argument
+       * is not recognized by the program.
+       */
+      failf("unsupported argument '%s'", argv[i]);
+      return NULL;
     }
 
-    /* determine whether the @y-update constraint is active. */
-    if (ly <= 0.0f) {
-      /* inactive. */
-      for (i = 0; i < g->n; i++)
-        y->x[i] = x->x[i] - Linv * g->x[i];
-    }
-    else {
-      /* active. compute the right half of the update. */
-      kf = Linv * ly;
-      for (i = 0; i < g->n; i++)
-        y->x[i] = x->x[i] + kf * b->x[i] - Linv * g->x[i];
-
-      /* compute the left half of the update. */
-      kf = 1.0f - ly / (ly + L);
-      for (i = 0; i < nS; i++)
-        y->x[S[i]] *= kf;
-    }
-
-    /* update the weighted sum of prior gradients. */
-    for (i = 0; i < g->n; i++)
-      h->x[i] += alpha * g->x[i];
-
-    /* determine whether constant-aim mode is enabled. */
-    if (lmb <= 0.0f) {
-      /* compute the sum of squares portion of the @z Lagrange multiplier. */
-      for (i = 0, lz = 0.0f; i < nS; i++)
-        lz += HX_SUMSQ(D)(h->x[S[i]]);
-
-      /* finish computing the @z Lagrange multiplier. */
-      lz = (L / eps) * hx_sqrt0(Linv * Linv * lz) - L;
-    }
-    else {
-      /* use a constant Lagrange multiplier. */
-      lz = lmb;
-    }
-
-    /* determine whether the @z-update constraint is active. */
-    if (lz <= 0.0f) {
-      /* inactive. */
-      for (i = 0; i < g->n; i++)
-        z->x[i] = b->x[i] - Linv * h->x[i];
-    }
-    else {
-      /* active. compute the right half of the update. */
-      kf = Linv * lz;
-      for (i = 0; i < g->n; i++)
-        z->x[i] = b->x[i] + kf * b->x[i] - Linv * h->x[i];
-
-      /* compute the left half of the update. */
-      kf = 1.0f - lz / (lz + L);
-      for (i = 0; i < nS; i++)
-        z->x[S[i]] *= kf;
-    }
-
-    /* compute the new coupled time-domain estimate. */
-    kf = 1.0f - tau;
-    for (i = 0; i < x->n; i++)
-      x->x[i] = tau * z->x[i] + kf * y->x[i];
-
-    /* output a log message, if necessary. */
-    if (flog)
-      fprintf(flog, "%6d %6d %.4le %.4le %.4le\n", ilog, iter, ly, lz, fobj);
+    /* increment the argument index. */
+    i++;
   }
+
+  /* check if zero arguments were supplied. */
+  if (argc == 1) {
+    /* if so, indicate that the task has become much simpler. */
+    T->help = 1;
+  }
+
+  /* return the task structure pointer. */
+  return T;
 }
 
-/* undefine all previously define'd macros above, so that this file
- * may be included again for other dimensionalities.
+/* task_free(): free all heap-allocated memory with a task structure.
+ *
+ * arguments:
+ *  @T: pointer to the data structure to free.
  */
-#undef TASK_CORE
-#undef ARR
-#undef ARR_COPY
-#undef ARR_ZERO
-#undef HX_SUMSQ
-#undef HX_FUNC
-#undef FFT
-#undef IFFT
+void task_free (task *T) {
+  /* return if the structure pointer is null. */
+  if (!T)
+    return;
+
+  /* free the input filename string, if necessary. */
+  if (T->fname_in)
+    free(T->fname_in);
+
+  /* free the output filename string, if necessary. */
+  if (T->fname_out)
+    free(T->fname_out);
+
+  /* free the log filename string, if necessary. */
+  if (T->fname_log)
+    free(T->fname_log);
+
+  /* free the schedule filename string, if necessary. */
+  if (T->fname_sched)
+    free(T->fname_sched);
+
+  /* close the logging file handle, if necessary. */
+  if (T->fh_log)
+    fclose(T->fh_log);
+
+  /* free the input pipe, if necessary. */
+  if (T->Pin)
+    pipe_close(T->Pin);
+
+  /* free the output pipe, if necessary. */
+  if (T->Pout)
+    pipe_close(T->Pout);
+
+  /* free the schedule structure. */
+  if (T->sch)
+    sched_free(T->sch);
+
+  /* free the structure pointer. */
+  free(T);
+}
+
+/* function declarations for dimensionality-specific task_run() functions.
+ */
+int task_run1 (task *T);
+int task_run2 (task *T);
+int task_run3 (task *T);
+
+/* task_run(): execute a reconstruction based on the contents of a
+ * task structure pointer.
+ *
+ * arguments:
+ *  @T: task structure pointer to access.
+ *
+ * returns:
+ *  integer indicating whether (1) or not (0) task execution succeeded.
+ */
+int task_run (task *T) {
+  /* declare required variables:
+   *  @status: return status from the task execution.
+   */
+  int status = 0;
+
+  /* check if the task pointer is null. */
+  if (!T) {
+    /* output an error message and return failure. */
+    failf("task structure pointer is null");
+    return 0;
+  }
+
+  /* check if the help flag has been raised. */
+  if (T->help) {
+    /* if so, output the usage message and return success. */
+    usagef();
+    return 1;
+  }
+
+  /* check that the dimension count is in bounds. */
+  if (T->dims < 1 || T->dims > 3) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported dimension count %d", T->dims);
+    return 0;
+  }
+
+  /* check that the iteration count is in bounds. */
+  if (T->iters < 1) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported iteration count %d", T->iters);
+    return 0;
+  }
+
+  /* check that the thread count is in bounds. */
+  if (T->threads < 1 || T->threads > 8192) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported thread count %d", T->threads);
+    return 0;
+  }
+
+  /* check that the background is in bounds. */
+  if (T->delta <= 0.0f) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported background %.3f", T->delta);
+    return 0;
+  }
+
+  /* check that the noise estimate is in bounds. */
+  if (T->sigma <= 0.0f) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported noise estimate %.3f", T->sigma);
+    return 0;
+  }
+
+  /* check that the Lagrange multiplier is in bounds. */
+  if (T->lambda < 0.0f) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported Lagrange multiplier %.3f", T->lambda);
+    return 0;
+  }
+
+  /* check if a log filename was provided. */
+  if (T->fname_log) {
+    /* attempt to open the log file handle. */
+    T->fh_log = fopen(T->fname_log, "w");
+
+    /* check if the file handle was opened. */
+    if (!T->fh_log) {
+      /* if not, output an error message and return failure. */
+      failf("failed to open '%s' for logging", T->fname_log);
+      return 0;
+    }
+  }
+
+  /* read the schedule file of the appropriate dimensionality. */
+  switch (T->dims) {
+    /* one-dimensional schedule. */
+    case 1:
+      T->sch = sched_alloc1(T->fname_sched, T->nx << 1);
+      break;
+
+    /* two-dimensional schedule. */
+    case 2:
+      T->sch = sched_alloc2(T->fname_sched, T->nx << 1, T->ny << 1);
+      break;
+
+    /* three-dimensional schedule. */
+    case 3:
+      T->sch = sched_alloc3(T->fname_sched,
+                            T->nx << 1,
+                            T->ny << 1,
+                            T->nz << 1);
+      break;
+  }
+
+  /* check if the schedule file was read successfully. */
+  if (!T->sch) {
+    /* if not, output an error message and return failure. */
+    failf("failed to read schedule '%s'", T->fname_sched);
+    return 0;
+  }
+
+  /* open the input pipe source. */
+  T->Pin = pipesrc_open(T->fname_in, T->sch);
+  if (!T->Pin) {
+    /* if unsuccessful, output an error message and return failure. */
+    failf("failed to open pipe source");
+    return 0;
+  }
+
+  /* adjust the pipe header values to match the reconstructed data. */
+  switch (T->dims) {
+    /* one-dimensional data. */
+    case 1:
+      T->Pin->hdr.sz = T->nx;
+      T->Pin->hdr.tdsz_f1 = T->nx;
+      break;
+
+    /* two-dimensional data. */
+    case 2:
+      T->Pin->hdr.sz = T->nx;
+      T->Pin->hdr.specnum = T->ny << 1;
+      T->Pin->hdr.apod_f1 = T->nx;
+      T->Pin->hdr.apod_f3 = T->ny;
+      T->Pin->hdr.quad = PIPE_QUAD_COMPLEX;
+      T->Pin->hdr.quad_f1 = PIPE_QUAD_COMPLEX;
+      T->Pin->hdr.quad_f3 = PIPE_QUAD_COMPLEX;
+      break;
+
+    /* three-dimensional data. */
+    case 3:
+      T->Pin->hdr.sz = T->nx;
+      T->Pin->hdr.specnum = T->ny << 1;
+      T->Pin->hdr.apod_f1 = T->nx;
+      T->Pin->hdr.apod_f3 = T->ny;
+      T->Pin->hdr.apod_f4 = T->nz;
+      T->Pin->hdr.size_f3 = T->nz << 1;
+      T->Pin->hdr.quad = PIPE_QUAD_COMPLEX;
+      T->Pin->hdr.quad_f1 = PIPE_QUAD_COMPLEX;
+      T->Pin->hdr.quad_f3 = PIPE_QUAD_COMPLEX;
+      T->Pin->hdr.quad_f4 = PIPE_QUAD_COMPLEX;
+      break;
+  }
+
+  /* open the output pipe sink. */
+  T->Pout = pipesink_open(T->fname_out, &T->Pin->hdr);
+  if (!T->Pout) {
+    /* if unsuccessful, output an error message and return failure. */
+    failf("failed to open pipe sink");
+    return 0;
+  }
+
+  /* set the number of threads to be used during reconstruction. */
+  omp_set_num_threads(T->threads);
+
+  /* execute a reconstruction task of the appropriate dimensionality. */
+  switch (T->dims) {
+    /* one-dimensional reconstruction. */
+    case 1:
+      status = task_run1(T);
+      break;
+
+    /* two-dimensional reconstruction. */
+    case 2:
+      status = task_run2(T);
+      break;
+
+    /* three-dimensional reconstruction. */
+    case 3:
+      status = task_run3(T);
+      break;
+  }
+
+  /* return the status value. */
+  return status;
+}
 

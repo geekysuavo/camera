@@ -85,9 +85,9 @@ arr3;
 
 /* function declarations: */
 
-arr1 *arr_alloc1 (int n);
+arr1 *arr_alloc1 (int n1, int n2, int n3);
 
-arr2 *arr_alloc2 (int n1, int n2);
+arr2 *arr_alloc2 (int n1, int n2, int n3);
 
 arr3 *arr_alloc3 (int n1, int n2, int n3);
 

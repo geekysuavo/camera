@@ -23,6 +23,37 @@
 /* include the core camera header. */
 #include "camera.h"
 
+/* USAGE_MSG: a short string literal to display to standard error if
+ * the user runs the program without arguments or with the
+ * '-help' argument.
+ */
+#define USAGE_MSG "\
+ CAMERA: Convex Accelerated Maximum Entropy Reconstruction Algorithm\n\
+ Copyright (C) 2015  Bradley Worley  <geekysuavo@gmail.com>\n\
+ Released under the GNU General Public License (ver. 3.0)\n\
+\n\
+ Usage:\n\
+   camera [OPTIONS]\n\
+\n\
+ Options:\n\
+   -in       Input filename.                                [stdin]\n\
+   -out      Output filename.                              [stdout]\n\
+   -sched    Sampling schedule filename.                  [nuslist]\n\
+   -dims     Number of dimensions to reconstruct.               [1]\n\
+   -xN       Final length of the x-dimension.                   [0]\n\
+   -yN       Final length of the y-dimension.                   [0]\n\
+   -zN       Final length of the z-dimension.                   [0]\n\
+   -iters    Number of iterations to perform.                 [250]\n\
+   -threads  Number of parallel threads to execute.             [1]\n\
+   -delta    Regularization functional background value.      [1.0]\n\
+   -sigma    Constant-aim mode data noise estimate.           [1.0]\n\
+   -lambda   Constant-lambda mode Lagrange multiplier.        [off]\n\
+   -log      Optional filename for logging output.            [off]\n\
+   -help     Print this help message.\n\
+\n\
+ Citation:\n\
+   B. Worley, J. Magn. Reson., 2015, In preparation.\n\n"
+
 /* strdup(): duplicate the contents of a string in heap memory.
  *
  * arguments:
@@ -47,6 +78,13 @@ char *strdup (char *s) {
 
   /* return the newly allocated and prepared character pointer. */
   return sdup;
+}
+
+/* usagef(): print a usage statement to standard error.
+ */
+void usagef (void) {
+  /* output the usage statement. */
+  fprintf(stderr, USAGE_MSG);
 }
 
 /* failf_fn(): target of the preprocessor macro failf(), and the function
