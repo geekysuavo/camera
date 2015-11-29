@@ -29,7 +29,7 @@
  *  @TASK_RUN: name of the high-level reconstruction function.
  *  @ARR: data type of the input multidimensional arrays.
  *  @ARR_ALLOC: name of the array allocation function.
- *  @ARR_free: name of the array deallocation function.
+ *  @ARR_FREE: name of the array deallocation function.
  *  @ARR_COPY: name of the array copy function.
  *  @ARR_ZERO: name of the array zero function.
  *  @HX_SUMSQ: name of the scalar squared norm function.
@@ -332,6 +332,7 @@ int TASK_RUN(D) (task *T) {
 #undef ARR_ZERO
 #undef HX_SUMSQ
 #undef HX_FUNC
+#undef HX_GRAD
 #undef PIPESRC_READ
 #undef PIPESINK_WRITE
 #undef FFT
