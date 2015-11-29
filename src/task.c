@@ -383,25 +383,8 @@ int task_run (task *T) {
   }
 
   /* read the schedule file of the appropriate dimensionality. */
-  switch (T->dims) {
-    /* one-dimensional schedule. */
-    case 1:
-      T->sch = sched_alloc1(T->fname_sched, T->nx << 1);
-      break;
-
-    /* two-dimensional schedule. */
-    case 2:
-      T->sch = sched_alloc2(T->fname_sched, T->nx << 1, T->ny << 1);
-      break;
-
-    /* three-dimensional schedule. */
-    case 3:
-      T->sch = sched_alloc3(T->fname_sched,
-                            T->nx << 1,
-                            T->ny << 1,
-                            T->nz << 1);
-      break;
-  }
+  T->sch = sched_alloc(T->fname_sched, T->dims,
+                       T->nx << 1, T->ny << 1, T->nz << 1);
 
   /* check if the schedule file was read successfully. */
   if (!T->sch) {

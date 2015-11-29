@@ -251,6 +251,41 @@ sched *sched_alloc3 (const char *fname, int n1, int n2, int n3) {
   return sch;
 }
 
+/* sched_alloc(): allocate and populate a schedule data structure
+ * from a file, specified with a filename string.
+ *
+ * arguments:
+ *  @fname: filename of the input schedule to read.
+ *  @dims: number of dimensions in the sampling grid.
+ *  @n1: first-dimension size of the sampling grid.
+ *  @n2: second-dimension size of the sampling grid.
+ *  @n3: third-dimension size of the sampling grid.
+ *
+ * returns:
+ *  pointer to a newly allocated and populated schedule structure,
+ *  or NULL on failure.
+ */
+sched *sched_alloc (const char *fname, int dims,
+                    int n1, int n2, int n3) {
+  /* determine which dimensionality to use. */
+  switch (dims) {
+    /* one-dimensional. */
+    case 1:
+      return sched_alloc1(fname, n1);
+
+    /* two-dimensional. */
+    case 2:
+      return sched_alloc2(fname, n1, n2);
+
+    /* three-dimensional. */
+    case 3:
+      return sched_alloc3(fname, n1, n2, n3);
+  }
+
+  /* if an unsupported dimensionality was passed, return failure. */
+  return NULL;
+}
+
 /* sched_free(): free all heap-allocated memory within a schedule.
  *
  * arguments:

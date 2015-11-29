@@ -37,11 +37,8 @@ sched;
 
 /* function declarations: */
 
-sched *sched_alloc1 (const char *fname, int n);
-
-sched *sched_alloc2 (const char *fname, int n1, int n2);
-
-sched *sched_alloc3 (const char *fname, int n1, int n2, int n3);
+sched *sched_alloc (const char *fname, int dims,
+                    int n1, int n2, int n3);
 
 void sched_free (sched *sch);
 
