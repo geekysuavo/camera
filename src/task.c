@@ -38,6 +38,31 @@
 #include "task-core.c"
 #undef D
 
+/* TASK_PARSE_STR(): preprocessor macro to parse a string argument
+ * from the command-line argument string array into a duplicate
+ * location.
+ */
+#define TASK_PARSE_STR(opt, dest) \
+  if (strcmp(argv[i], opt) == 0) { \
+    if (i + 1 >= argc) { \
+      failf("'" opt "' argument requires a value"); \
+      return NULL; \
+    } \
+    if (dest) free(dest); \
+    dest = strdup(argv[++i]); \
+  }
+
+/* TASK_PARSE(): preprocessor macro to parse an integer or float argument
+ * from the command-line argument string array into a new location.
+ */
+#define TASK_PARSE(opt, fmt, dest) \
+  if (strcmp(argv[i], opt) == 0) { \
+    if (i + 1 >= argc || sscanf(argv[++i], fmt, &(dest)) != 1) { \
+      failf("'" opt "' argument requires a value"); \
+      return NULL; \
+    } \
+  }
+
 /* task_alloc(): allocate and initialize a task structure pointer based
  * on an argument string array.
  *
@@ -99,173 +124,25 @@ task *task_alloc (int argc, char **argv) {
   i = 1;
   while (i < argc) {
     /* check for a recognized argument flag. */
-    if (strcmp(argv[i], "-in") == 0) {
-      /* check that the flag is followed by another argument. */
-      if (i + 1 >= argc) {
-        /* if not, output an error message and return failure. */
-        failf("'in' argument requires a value");
-        return NULL;
-      }
-
-      /* duplicate the input filename string. */
-      T->fname_in = strdup(argv[++i]);
-    }
-    else if (strcmp(argv[i], "-out") == 0) {
-      /* check that the flag is followed by another argument. */
-      if (i + 1 >= argc) {
-        /* if not, output an error message and return failure. */
-        failf("'out' argument requires a value");
-        return NULL;
-      }
-
-      /* duplicate the output filename string. */
-      T->fname_out = strdup(argv[++i]);
-    }
-    else if (strcmp(argv[i], "-log") == 0) {
-      /* check that the flag is followed by another argument. */
-      if (i + 1 >= argc) {
-        /* if not, output an error message and return failure. */
-        failf("'log' argument requires a value");
-        return NULL;
-      }
-
-      /* duplicate the log filename string. */
-      T->fname_log = strdup(argv[++i]);
-    }
-    else if (strcmp(argv[i], "-sched") == 0) {
-      /* check that the flag is followed by another argument. */
-      if (i + 1 >= argc) {
-        /* if not, output an error message and return failure. */
-        failf("'sched' argument requires a value");
-        return NULL;
-      }
-
-      /* duplicate the schedule filename string after
-       * freeing the previously set value.
-       */
-      free(T->fname_sched);
-      T->fname_sched = strdup(argv[++i]);
-    }
-    else if (strcmp(argv[i], "-dims") == 0) {
-      /* attempt to parse the dimension count. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->dims) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'dims' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-xN") == 0) {
-      /* attempt to parse the first-dimension size. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->nx) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'xN' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-yN") == 0) {
-      /* attempt to parse the second-dimension size. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->ny) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'yN' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-zN") == 0) {
-      /* attempt to parse the third-dimension size. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->nz) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'zN' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-xJ") == 0) {
-      /* attempt to parse the first-dimension coupling. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->jx) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'xJ' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-yJ") == 0) {
-      /* attempt to parse the second-dimension coupling. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->jy) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'yJ' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-zJ") == 0) {
-      /* attempt to parse the third-dimension coupling. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->jz) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'zJ' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-xW") == 0) {
-      /* attempt to parse the first-dimension linewidth. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->wx) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'xW' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-yW") == 0) {
-      /* attempt to parse the second-dimension linewidth. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->wy) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'yW' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-zW") == 0) {
-      /* attempt to parse the third-dimension linewidth. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->wz) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'zW' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-iters") == 0) {
-      /* attempt to parse the iteration count. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->iters) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'iters' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-threads") == 0) {
-      /* attempt to parse the thread count. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%d", &T->threads) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'threads' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-delta") == 0) {
-      /* attempt to parse the regularization background value. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->delta) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'delta' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-sigma") == 0) {
-      /* attempt to parse the reconstruction noise estimate. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->sigma) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'sigma' argument requires a value");
-        return NULL;
-      }
-    }
-    else if (strcmp(argv[i], "-lambda") == 0) {
-      /* attempt to parse the reconstruction Lagrange multiplier. */
-      if (i + 1 >= argc || sscanf(argv[++i], "%f", &T->lambda) != 1) {
-        /* if unsuccessful, output an error message and return failure. */
-        failf("'lambda' argument requires a value");
-        return NULL;
-      }
-    }
+         TASK_PARSE_STR("-in",        T->fname_in)
+    else TASK_PARSE_STR("-out",       T->fname_out)
+    else TASK_PARSE_STR("-log",       T->fname_log)
+    else TASK_PARSE_STR("-sched",     T->fname_sched)
+    else TASK_PARSE("-dims",    "%d", T->dims)
+    else TASK_PARSE("-xN",      "%d", T->nx)
+    else TASK_PARSE("-yN",      "%d", T->ny)
+    else TASK_PARSE("-zN",      "%d", T->nz)
+    else TASK_PARSE("-xJ",      "%f", T->jx)
+    else TASK_PARSE("-yJ",      "%f", T->jy)
+    else TASK_PARSE("-zJ",      "%f", T->jz)
+    else TASK_PARSE("-xW",      "%f", T->wx)
+    else TASK_PARSE("-yW",      "%f", T->wy)
+    else TASK_PARSE("-zW",      "%f", T->wz)
+    else TASK_PARSE("-iters",   "%d", T->iters)
+    else TASK_PARSE("-threads", "%d", T->threads)
+    else TASK_PARSE("-delta",   "%f", T->delta)
+    else TASK_PARSE("-sigma",   "%f", T->sigma)
+    else TASK_PARSE("-lambda",  "%f", T->lambda)
     else if (strcmp(argv[i], "-help") == 0) {
       /* output the usage message to standard error, because the '-help'
        * flag has been specified.
