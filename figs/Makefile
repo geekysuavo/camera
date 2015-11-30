@@ -33,6 +33,7 @@ distclean: clean
 	$(MAKE) -C conv-by-lambda clean
 	$(MAKE) -C conv-by-method clean
 	$(MAKE) -C conv-by-steps clean
+	$(MAKE) -C decoup clean
 	$(MAKE) -C hnco clean
 	$(MAKE) -C hsqc clean
 	$(MAKE) -C nonlin clean

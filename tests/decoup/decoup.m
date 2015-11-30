@@ -13,7 +13,7 @@ def = 1;
 aim = 7e5;
 lambda = [];
 iters = 500;
-J = [1 : 5 : 51];
+J = [0, [1 : 5 : 51]];
 
 % compute the nudft spectrum.
 B = real(fftshift(fft(i .* [b; zeros(size(b))])));

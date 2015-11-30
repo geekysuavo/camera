@@ -1,0 +1,9 @@
+# .gitignore
+*.o
+*.dat
+*.png
+*.tif
+*.corr
+ser
+camera
+data/*/data
