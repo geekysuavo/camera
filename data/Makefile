@@ -6,6 +6,7 @@ all:
 	$(MAKE) -C nhsqc-ubq-sigma/scripts
 	$(MAKE) -C nhsqc-ubq-lambda/scripts
 	$(MAKE) -C hnco/scripts
+	$(MAKE) -C hnco-ext/scripts
 	$(MAKE) -C noesy/scripts
 
 clean:
@@ -15,6 +16,7 @@ clean:
 	$(MAKE) -C nhsqc-ubq-sigma/scripts $@
 	$(MAKE) -C nhsqc-ubq-lambda/scripts $@
 	$(MAKE) -C hnco/scripts $@
+	$(MAKE) -C hnco-ext/scripts $@
 	$(MAKE) -C noesy/scripts $@
 
 distclean: clean
