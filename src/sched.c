@@ -315,23 +315,24 @@ void sched_free (sched *sch) {
  * arguments:
  *  @sch: pointer to the schedule structure pointer.
  *  @dims: number of grid dimensions.
- *  @n1, @j1, @w1, @sw1: first-dimension parameters.
- *  @n2, @j2, @w2, @sw2: second-dimension parameters.
- *  @n3, @j3, @w3, @sw3: third-dimension parameters.
+ *  @n1, @J1, @w1, @sw1: first-dimension parameters.
+ *  @n2, @J2, @w2, @sw2: second-dimension parameters.
+ *  @n3, @J3, @w3, @sw3: third-dimension parameters.
  *
  * returns:
  *  integer indicating whether (1) or not (0) the computation succeeded.
  */
 int sched_kernel (sched *sch, int dims,
-                  int n1, hx0 j1, hx0 w1, hx0 sw1,
-                  int n2, hx0 j2, hx0 w2, hx0 sw2,
-                  int n3, hx0 j3, hx0 w3, hx0 sw3) {
+                  int n1, hx0 J1, hx0 w1, hx0 sw1,
+                  int n2, hx0 J2, hx0 w2, hx0 sw2,
+                  int n3, hx0 J3, hx0 w3, hx0 sw3) {
   /* declare required variables:
    *  @i: general-purpose loop counter.
-   *  @i1, @i2, @i3: unpacked grid indices.
+   *  @k: packed grid index.
+   *  @k1, @k2, @k3: unpacked grid indices.
    *  @dt1, @dt2, @dt3: dwell times.
    */
-  int i, i1, i2, i3;
+  int i, k, k1, k2, k3;
   hx0 dt1, dt2, dt3;
 
   /* return if the structure pointer is null. */
@@ -350,37 +351,38 @@ int sched_kernel (sched *sch, int dims,
 
   /* loop over the array of coefficients. */
   for (i = 0; i < sch->n; i++) {
-    /* initialize the coefficient. */
+    /* initialize the coefficient and get the packed index. */
     sch->w[i] = 1.0f;
+    k = sch->idx[i];
 
     /* check if the schedule has at least one dimension. */
     if (dims >= 1) {
       /* compute the first-dimension index. */
-      i1 = i % n1;
+      k1 = k % n1;
 
       /* multiply in the first-dimension contributions. */
-      sch->w[i] *= cos(M_PI * dt1 * ((hx0) i1));
-      sch->w[i] *= exp(-w1 * dt1 * ((hx0) i1));
+      sch->w[i] *= cos(M_PI * J1 * dt1 * ((hx0) k1));
+      sch->w[i] *= exp(-w1 * dt1 * ((hx0) k1));
     }
 
     /* check if the schedule has at least two dimensions. */
     if (dims >= 2) {
       /* compute the second-dimension index. */
-      i2 = ((i - i1) / n1) % n2;
+      k2 = ((k - k1) / n1) % n2;
 
       /* multiply in the second-dimension contributions. */
-      sch->w[i] *= cos(M_PI * dt2 * ((hx0) i2));
-      sch->w[i] *= exp(-w2 * dt2 * ((hx0) i2));
+      sch->w[i] *= cos(M_PI * J2 * dt2 * ((hx0) k2));
+      sch->w[i] *= exp(-w2 * dt2 * ((hx0) k2));
     }
 
     /* check if the schedule has three dimensions. */
     if (dims >= 3) {
       /* compute the second-dimension index. */
-      i3 = (i - i1 - n1 * i2) / (n1 * n2);
+      k3 = (k - k1 - n1 * k2) / (n1 * n2);
 
       /* multiply in the second-dimension contributions. */
-      sch->w[i] *= cos(M_PI * dt3 * ((hx0) i3));
-      sch->w[i] *= exp(-w3 * dt3 * ((hx0) i3));
+      sch->w[i] *= cos(M_PI * J3 * dt3 * ((hx0) k3));
+      sch->w[i] *= exp(-w3 * dt3 * ((hx0) k3));
     }
   }
 
