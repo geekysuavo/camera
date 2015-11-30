@@ -1,5 +1,7 @@
 
 all:
+	$(MAKE) -C chsqc-ca/scripts
+	$(MAKE) -C chsqc-cacb/scripts
 	$(MAKE) -C nhsqc-gb1/scripts
 	$(MAKE) -C nhsqc-ubq-sigma/scripts
 	$(MAKE) -C nhsqc-ubq-lambda/scripts
@@ -7,6 +9,8 @@ all:
 	$(MAKE) -C noesy/scripts
 
 clean:
+	$(MAKE) -C chsqc-ca/scripts $@
+	$(MAKE) -C chsqc-cacb/scripts $@
 	$(MAKE) -C nhsqc-gb1/scripts $@
 	$(MAKE) -C nhsqc-ubq-sigma/scripts $@
 	$(MAKE) -C nhsqc-ubq-lambda/scripts $@

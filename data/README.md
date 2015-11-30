@@ -58,6 +58,9 @@ The [chsqc-ca](chsqc-ca/) directory houses a semi-selective 1H-13C HSQC of
 ubiquitin, with evolution times set to select for alpha carbons. The data
 was collected at 5% sparsity on a 2048-point grid using sine-gap sampling.
 
+This directory additionally demonstrates the use of _J_-coupling deconvolution
+in **camera** to produce singlet spectra when coupling patterns are known.
+
 ### chsqc-cacb
 
 The [chsqc-cacb](chsqc-cacb/) directory holds the same 1H-13C HSQC as the
