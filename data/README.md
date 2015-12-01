@@ -5,6 +5,49 @@ subdirectories here. Each data directory contains _acqus_ files generated
 from Bruker Topspin, and a _scripts_ subdirectory that holds all necessary
 conversion, reconstruction and processing steps for that dataset.
 
+## About the scripts
+
+Within each subdirectory here, a _scripts_ directory exists that holds all
+relevant reconstruction and processing procedures for that dataset. There
+are several scripts for each dataset, each of which has a well-defined role:
+
+### fid.sh
+
+The _fid.sh_ script converts raw Bruker NUS data in the _ser_ file into
+the nmrPipe format. For reconstructing raw Varian NUS data using **camera**,
+only this script needs modification.
+
+### proc0.sh
+
+The _proc0.sh_ script processes the direct (uniformly sampled) dimension of
+the nmrPipe-format time-domain NUS data, but does not prepare the data for
+reconstruction. This script should be used to determine the direct dimension
+phase correction prior to reconstruction.
+
+### proc1.sh
+
+The _proc1.sh_ script performs the exact same direct-dimension processing
+as _proc0.sh_, but also prepares the processed NUS data for reconstruction
+by transposition. The transposition step places the direct dimension last
+in the dimension ordering, so that the indirect dimensions may be read
+in-order for reconstruction.
+
+### procR.sh
+
+The _procR.sh_ script reconstructs the indirect (nonuniformly sampled)
+dimensions of the partially Fourier-transformed data.
+
+### proc2.sh / proc23.sh / proc234.sh
+
+The _proc2.sh_ (2D), _proc23.sh_ (3D), and _proc234.sh_ (4D) scripts
+process the reconstructed indirect dimensions using standard techniques.
+
+### conv.sh
+
+The _conv.sh_ script converts the fully reconstructed and processed
+dataset into nmrView format for visualization in other software
+packages, like [CCP-NMR](http://www.ccpn.ac.uk/software/analysis).
+
 ## Running the scripts
 
 To build (_i.e._ reconstruct and process) all the datasets, you can just
