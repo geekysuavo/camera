@@ -55,7 +55,10 @@ run **make** from this directory. To build an individual dataset, simply
 run **make** from its _scripts_ subdirectory. For example, to build the
 HNCO dataset, run:
 
-> cd hnco/scripts && make
+```bash
+cd hnco/scripts
+make
+```
 
 Raw serial files are not stored in this GitHub repository, for the sake
 of minimizing the disk storage required by the **camera** source tree.

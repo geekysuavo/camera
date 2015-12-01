@@ -10,7 +10,10 @@ You can build everything in all subdirectories by running **make** from
 this location, or you can selectively build any of the subdirectories
 here by changing into that directory and running **make**, _i.e._:
 
-> cd conv && make
+```bash
+cd conv
+make
+```
 
 ## Subdirectories
 
