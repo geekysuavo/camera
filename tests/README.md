@@ -24,6 +24,20 @@ A comparison of convergence with gradient descent and conjugate gradient
 fast forward MaxEnt (FFM), as well as convergence analyses at several
 values of _lambda_ and _delta_ are stored here.
 
+### decoup
+
+This subdirectory contains a demonstration of using **camera** to achieve
+_J_-coupling deconvolution, similar to that performed here:
+
+> Shimba, N. et al., _Elimination of Ca-13 Splitting in Protein NMR Spectra
+> by Deconvolution with Maximum Entropy Reconstruction_, JACS, 2003,
+> 125: 2382-2383.
+
+### narrow
+
+This subdirectory contains a similar demonstration of deconvolution, but
+using an exponential decay for a convolution kernel.
+
 ### nonlin
 
 This subdirectory contains an analysis of the nonlinearity of **camera**
