@@ -1,7 +1,7 @@
 # camera/figs
 
 This directory contains all scripts used to generate figures for the
-**camera** publication.
+**camera** publication in the _Journal of Magnetic Resonance_.
 
 ## Running the scripts
 
