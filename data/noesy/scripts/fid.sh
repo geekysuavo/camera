@@ -19,5 +19,5 @@ bruk2pipe -in ../ser                                                        \
   -xLAB         Ha  -yLAB          Ca  -zLAB         Hb  -aLAB          Cb  \
   -ndim          4  -aq2D      States                                     | \
   nmrPipe -fn MAC -macro ${NMRTXT}/ranceY.M -noRd -noWr                   | \
-  pipe2xyz -x -out ../data/fid/noe%02d%04d.fid -verb -ov -to 0
+  pipe2xyz -x -out ../data/fid/noe%04d%04d.fid -verb -ov -to 0
 

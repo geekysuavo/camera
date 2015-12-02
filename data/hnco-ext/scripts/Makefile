@@ -31,6 +31,7 @@ $(DAT):
 
 $(SER):
 	wget $(SER_URL) -O $@
+	sha1sum -c $(addsuffix .sha1,$@)
 
 clean:
 	rm -rf $(DAT)

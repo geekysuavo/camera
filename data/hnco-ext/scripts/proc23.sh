@@ -10,4 +10,3 @@ xyz2pipe -in ../data/yzx/hnco%04d.ft1 -x           | \
   nmrPipe -fn PS -p0 7.0 -p1 0.0 -di               | \
   pipe2xyz -ov -out ../data/yzx/hnco%04d.ft3 -x
 
-#

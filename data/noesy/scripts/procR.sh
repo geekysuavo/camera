@@ -1,6 +1,6 @@
 #!/bin/bash
 
-xyz2pipe -in ../data/yzax/noe%04d%02d.nus -x  | \
+xyz2pipe -in ../data/yzax/noe%04d%04d.nus -x  | \
   ../../../bin/camera  \
     -sched ../nuslist  \
     -dims 3            \

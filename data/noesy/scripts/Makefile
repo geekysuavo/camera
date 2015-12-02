@@ -3,8 +3,8 @@ SER_URL='https://www.dropbox.com/s/7yoyioer17uvms7/noesy.ser?dl=1'
 
 SER=../ser
 DAT=../data
-FID=$(DAT)/fid/noe010001.fid
-NUS=$(DAT)/yzax/noe000101.nus
+FID=$(DAT)/fid/noe00010001.fid
+NUS=$(DAT)/yzax/noe00010001.nus
 FT1=$(DAT)/yzax/noe00010001.ft1
 FT4=$(DAT)/yzax/noe00010001.ft4
 NV=$(DAT)/noesy.nv
@@ -31,6 +31,7 @@ $(DAT):
 
 $(SER):
 	wget $(SER_URL) -O $@
+	sha1sum -c $(addsuffix .sha1,$@)
 
 clean:
 	rm -rf $(DAT)
