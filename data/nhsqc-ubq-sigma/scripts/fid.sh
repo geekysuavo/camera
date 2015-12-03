@@ -1,5 +1,7 @@
 #!/bin/bash
 
+if [ ! -d ../data ]; then mkdir ../data; fi
+
 bruk2pipe -in ../ser                            \
   -bad 0.0 -aswap -DMX -decim 2376 -dspfvs 20   \
   -grpdly 67.9872589111328                      \

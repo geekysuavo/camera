@@ -1,8 +1,6 @@
 #!/bin/bash
 
-if [ ! -d ../data ]; then
-  mkdir ../data
-fi
+if [ ! -d ../data ]; then mkdir ../data; fi
 
 rm -rf ../data/fid
 mkdir ../data/fid
