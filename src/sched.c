@@ -54,7 +54,7 @@ sched *sched_init (void) {
   return sch;
 }
 
-/* sched_alloc1: allocate and populate a one-dimensional schedule
+/* sched_alloc1(): allocate and populate a one-dimensional schedule
  * from a file, specified with a filename string.
  *
  * arguments:
@@ -117,7 +117,7 @@ sched *sched_alloc1 (const char *fname, int n) {
   return sch;
 }
 
-/* sched_alloc2: allocate and populate a two-dimensional schedule
+/* sched_alloc2(): allocate and populate a two-dimensional schedule
  * from a file, specified with a filename string.
  *
  * arguments:
@@ -183,7 +183,7 @@ sched *sched_alloc2 (const char *fname, int n1, int n2) {
   return sch;
 }
 
-/* sched_alloc3: allocate and populate a three-dimensional schedule
+/* sched_alloc3(): allocate and populate a three-dimensional schedule
  * from a file, specified with a filename string.
  *
  * arguments:
