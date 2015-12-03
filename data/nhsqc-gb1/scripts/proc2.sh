@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 15N
 nmrPipe -in ../data/hsqc.ft1                       | \
   nmrPipe -fn ZF -auto                             | \
   nmrPipe -fn FT                                   | \

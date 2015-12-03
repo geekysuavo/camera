@@ -3,6 +3,7 @@
 rm -rf ../data/yzax
 mkdir ../data/yzax
 
+# Ha
 xyz2pipe -in ../data/fid/noe%04d%04d.fid -x -verb  | \
   nmrPipe -fn SP -off 0.5 -end 0.98 -pow 1 -c 0.5  | \
   nmrPipe -fn ZF -auto                             | \

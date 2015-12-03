@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 15N, 13C
 xyz2pipe -in ../data/yzx/hnco%04d.ft1 -x           | \
   nmrPipe -fn ZF -auto                             | \
   nmrPipe -fn FT -neg                              | \

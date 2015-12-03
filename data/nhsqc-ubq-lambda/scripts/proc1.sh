@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# HN
 nmrPipe -in ../data/hsqc.fid                       | \
   nmrPipe -fn SOL                                  | \
   nmrPipe -fn SP -off 0.45 -end 0.98 -pow 2        | \

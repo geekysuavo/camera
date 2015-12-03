@@ -3,6 +3,7 @@
 rm -rf ../data/yzx
 mkdir ../data/yzx
 
+# HN
 xyz2pipe -in ../data/fid/hnco%04d.fid -x           | \
   nmrPipe -fn SOL                                  | \
   nmrPipe -fn SP -off 0.5 -end 0.98 -pow 2 -c 0.5  | \
