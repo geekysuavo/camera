@@ -7,12 +7,16 @@ FID=$(DAT)/fid/hnco0001.fid
 NUS=$(DAT)/yzx/hnco0001.nus
 FT1=$(DAT)/yzx/hnco0001.ft1
 FT3=$(DAT)/yzx/hnco0001.ft3
+PRJ=$(DAT)/prj/15N.13C.dat
 NV=$(DAT)/hnco.nv
 
-all: $(NV)
+all: $(NV) $(PRJ)
 
 $(NV): $(FT3)
 	./conv.sh
+
+$(PRJ): $(FT3)
+	./prj.sh
 
 $(FT3): $(FT1)
 	./proc23.sh

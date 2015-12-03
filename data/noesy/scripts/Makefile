@@ -7,12 +7,16 @@ FID=$(DAT)/fid/noe00010001.fid
 NUS=$(DAT)/yzax/noe00010001.nus
 FT1=$(DAT)/yzax/noe00010001.ft1
 FT4=$(DAT)/yzax/noe00010001.ft4
+PRJ=$(DAT)/prj/Ha.Ca.dat
 NV=$(DAT)/noesy.nv
 
-all: $(NV)
+all: $(NV) $(PRJ)
 
 $(NV): $(FT4)
 	./conv.sh
+
+$(PRJ): $(FT4)
+	./prj.sh
 
 $(FT4): $(FT1)
 	./proc234.sh
