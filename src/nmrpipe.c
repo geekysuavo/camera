@@ -34,7 +34,7 @@
  *  pointer to a newly allocated and initialized pipe structure, or
  *  null on failure.
  */
-pipe *pipesrc_open (char *fname, sched *sch) {
+nmrpipe *pipesrc_open (char *fname, sched *sch) {
   /* declare required variables:
    *  @n_bytes: number of bytes required to hold the pipe header.
    *  @bytes: array of bytes to hold the pipe header.
@@ -42,10 +42,10 @@ pipe *pipesrc_open (char *fname, sched *sch) {
    */
   char *bytes;
   int n_bytes;
-  pipe *P;
+  nmrpipe *P;
 
   /* attempt to allocate a new structure pointer. */
-  P = (pipe*) malloc(sizeof(pipe));
+  P = (nmrpipe*) malloc(sizeof(nmrpipe));
   if (!P)
     return NULL;
 
@@ -65,16 +65,16 @@ pipe *pipesrc_open (char *fname, sched *sch) {
   if (!P->fh) {
     /* if not, output an error message and return null. */
     failf("failed to open file '%s'", P->fname);
-    pipe_close(P);
+    nmrpipe_close(P);
     return NULL;
   }
 
   /* allocate an array to hold the raw pipe header data. */
-  n_bytes = sizeof(struct pipe_hdr);
+  n_bytes = sizeof(struct nmrpipe_hdr);
   bytes = (char*) malloc(n_bytes * sizeof(char));
   if (!bytes) {
     /* if unsuccessful, return null. */
-    pipe_close(P);
+    nmrpipe_close(P);
     return NULL;
   }
 
@@ -82,7 +82,7 @@ pipe *pipesrc_open (char *fname, sched *sch) {
   if (fread(bytes, sizeof(char), n_bytes, P->fh) != n_bytes) {
     /* if unsuccessful, output an error message and return null. */
     failf("failed to read pipe header");
-    pipe_close(P);
+    nmrpipe_close(P);
     return NULL;
   }
 
@@ -105,23 +105,23 @@ pipe *pipesrc_open (char *fname, sched *sch) {
  *  pointer to a newly allocated and initialized pipe structure, or
  *  null on failure.
  */
-pipe *pipesink_open (char *fname, struct pipe_hdr *hdr) {
+nmrpipe *pipesink_open (char *fname, struct nmrpipe_hdr *hdr) {
   /* declare required variables:
    *  @n_hdr: number of floats required to hold the pipe header.
    *  @P: pointer to the pipe structure to allocate.
    */
   int n_hdr;
-  pipe *P;
+  nmrpipe *P;
 
   /* attempt to allocate a new structure pointer. */
-  P = (pipe*) malloc(sizeof(pipe));
+  P = (nmrpipe*) malloc(sizeof(nmrpipe));
   if (!P)
     return NULL;
 
   /* copy the contents of the supplied pipe header into the newly
    * allocated pipe structure.
    */
-  memcpy(&P->hdr, hdr, sizeof(struct pipe_hdr));
+  memcpy(&P->hdr, hdr, sizeof(struct nmrpipe_hdr));
 
   /* initialize the structure fields. */
   P->sch = NULL;
@@ -139,16 +139,16 @@ pipe *pipesink_open (char *fname, struct pipe_hdr *hdr) {
   if (!P->fh) {
     /* if not, output an error message and return null. */
     failf("failed to open file '%s'", P->fname);
-    pipe_close(P);
+    nmrpipe_close(P);
     return NULL;
   }
 
   /* attempt to write the pipe header data to the file handle. */
-  n_hdr = sizeof(struct pipe_hdr) / sizeof(float);
+  n_hdr = sizeof(struct nmrpipe_hdr) / sizeof(float);
   if (fwrite(&P->hdr, sizeof(float), n_hdr, P->fh) != n_hdr) {
     /* if unsuccessul, output an error message and return null. */
     failf("failed to write pipe header");
-    pipe_close(P);
+    nmrpipe_close(P);
     return NULL;
   }
 
@@ -166,7 +166,7 @@ pipe *pipesink_open (char *fname, struct pipe_hdr *hdr) {
  *  integer indicating the number of pipesrc_read[123]() calls that the
  *  pipe file or stream will successfully admit, or zero on failure.
  */
-int pipesrc_nread (pipe *P) {
+int pipesrc_nread (nmrpipe *P) {
   /* initialize the output value. */
   int n = 0;
 
@@ -193,7 +193,7 @@ int pipesrc_nread (pipe *P) {
  * returns:
  *  integer indicating whether (1) or not (0) the read was successful.
  */
-int pipesrc_read1 (pipe *P, arr1 *x) {
+int pipesrc_read1 (nmrpipe *P, arr1 *x) {
   /* declare required variables:
    *  @i: schedule index loop counter.
    *  @n_buf: number of floats to read.
@@ -242,7 +242,7 @@ int pipesrc_read1 (pipe *P, arr1 *x) {
  * returns:
  *  integer indicating whether (1) or not (0) the read was successful.
  */
-int pipesrc_read2 (pipe *P, arr2 *x) {
+int pipesrc_read2 (nmrpipe *P, arr2 *x) {
   /* declare required variables:
    *  @i: schedule index loop counter.
    *  @n_buf: number of floats to read.
@@ -294,7 +294,7 @@ int pipesrc_read2 (pipe *P, arr2 *x) {
  * returns:
  *  integer indicating whether (1) or not (0) the read was successful.
  */
-int pipesrc_read3 (pipe *P, arr3 *x) {
+int pipesrc_read3 (nmrpipe *P, arr3 *x) {
   /* declare required variables:
    *  @i: schedule index loop counter.
    *  @n_buf: number of floats to read.
@@ -350,7 +350,7 @@ int pipesrc_read3 (pipe *P, arr3 *x) {
  * returns:
  *  integer indicating whether (1) or not (0) the write was successful.
  */
-int pipesink_write1 (pipe *P, arr1 *x) {
+int pipesink_write1 (nmrpipe *P, arr1 *x) {
   /* declare required variables:
    *  @i: array index loop counter.
    *  @h: half the length of the hypercomplex array.
@@ -394,7 +394,7 @@ int pipesink_write1 (pipe *P, arr1 *x) {
  * returns:
  *  integer indicating whether (1) or not (0) the write was successful.
  */
-int pipesink_write2 (pipe *P, arr2 *x) {
+int pipesink_write2 (nmrpipe *P, arr2 *x) {
   /* declare required variables:
    *  @i: buffer index counter.
    *  @i1, @i2: array index counters.
@@ -452,7 +452,7 @@ int pipesink_write2 (pipe *P, arr2 *x) {
  * returns:
  *  integer indicating whether (1) or not (0) the write was successful.
  */
-int pipesink_write3 (pipe *P, arr3 *x) {
+int pipesink_write3 (nmrpipe *P, arr3 *x) {
   /* declare required variables:
    *  @i: buffer index counter.
    *  @i1, @i2, @i3: array index counters.
@@ -524,13 +524,13 @@ int pipesink_write3 (pipe *P, arr3 *x) {
   return (n_write == n_buf);
 }
 
-/* pipe_close(): close a pipe-format file or stream and free
+/* nmrpipe_close(): close a pipe-format file or stream and free
  * its associated heap-allocated memory.
  *
  * arguments:
  *  @P: pointer to the pipe structure to free.
  */
-void pipe_close (pipe *P) {
+void nmrpipe_close (nmrpipe *P) {
   /* return if the structure pointer is null. */
   if (!P)
     return;

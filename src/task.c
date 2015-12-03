@@ -63,6 +63,12 @@
     } \
   }
 
+/* function declarations for dimensionality-specific task_run() functions.
+ */
+int task_run1 (task *T);
+int task_run2 (task *T);
+int task_run3 (task *T);
+
 /* task_alloc(): allocate and initialize a task structure pointer based
  * on an argument string array.
  *
@@ -203,11 +209,11 @@ void task_free (task *T) {
 
   /* free the input pipe, if necessary. */
   if (T->Pin)
-    pipe_close(T->Pin);
+    nmrpipe_close(T->Pin);
 
   /* free the output pipe, if necessary. */
   if (T->Pout)
-    pipe_close(T->Pout);
+    nmrpipe_close(T->Pout);
 
   /* free the schedule structure. */
   if (T->sch)
@@ -217,11 +223,92 @@ void task_free (task *T) {
   free(T);
 }
 
-/* function declarations for dimensionality-specific task_run() functions.
+/* task_memcheck_humanize(): convert a byte count into a human-readable
+ * size. this is just a little extra fluff to make very rare error
+ * messages from task_memcheck() more tangible.
+ *
+ * arguments:
+ *  @n: input byte count to convert.
+ *  @f: pointer to the output floating-point value.
+ *  @s: string in which to store the output units.
  */
-int task_run1 (task *T);
-int task_run2 (task *T);
-int task_run3 (task *T);
+void task_memcheck_humanize (long n, float *f, char *s) {
+  /* initialize the output values. */
+  *f = (float) n;
+  strcpy(s, "B");
+
+  /* convert to kB, if necessary. */
+  if (*f >= 1000.0) {
+    *f /= 1000.0;
+    strcpy(s, "kB");
+  }
+
+  /* convert to MB, if necessary. */
+  if (*f >= 1000.0) {
+    *f /= 1000.0;
+    strcpy(s, "MB");
+  }
+
+  /* convert to GB, if necessary. */
+  if (*f >= 1000.0) {
+    *f /= 1000.0;
+    strcpy(s, "GB");
+  }
+
+  /* convert to TB, if necessary. */
+  if (*f >= 1000.0) {
+    *f /= 1000.0;
+    strcpy(s, "TB");
+  }
+}
+
+/* task_memcheck(): determine whether a task, as configured, will exceed
+ * the physical memory capacity of the system.
+ *
+ * arguments:
+ *  @T: pointer to a task data structure.
+ *
+ * returns:
+ *  integer indicating whether (1) or not (0) the currently configured
+ *  task will exceed the total physical memory capacity of the system.
+ */
+int task_memcheck (task *T) {
+  /* declare required variables:
+   *  @n_task: number of bytes required by the task.
+   *  @n_avail: number of bytes available.
+   */
+  char s_task[4], s_avail[4];
+  float f_task, f_avail;
+  long n_task, n_avail;
+
+  /* obtain the available memory limit. */
+  n_avail = sysconf(_SC_PHYS_PAGES);
+  n_avail *= sysconf(_SC_PAGE_SIZE);
+
+  /* compute the required memory size. */
+  n_task = sizeof(float) * ((long) pow(2.0, (float) T->dims));
+  n_task *= (T->dims >= 1 ? T->nx : 1);
+  n_task *= (T->dims >= 2 ? T->ny : 1);
+  n_task *= (T->dims >= 3 ? T->nz : 1);
+  n_task *= 6 * T->threads;
+
+  /* check if the required amount exceeds the limit. */
+  if (n_task >= n_avail) {
+    /* compute human-readable values. */
+    task_memcheck_humanize(n_task, &f_task, s_task);
+    task_memcheck_humanize(n_avail, &f_avail, s_avail);
+
+    /* output an error message ... */
+    failf("task exceeds available memory (%.2f %s >= %.2f %s)",
+          f_task, s_task, f_avail, s_avail);
+
+    /* ... and return failure. */
+    return 0;
+  }
+
+  /* return success. */
+  return 1;
+}
 
 /* task_run(): execute a reconstruction based on the contents of a
  * task structure pointer.
@@ -293,6 +380,12 @@ int task_run (task *T) {
     failf("unsupported Lagrange multiplier %.3f", T->lambda);
     return 0;
   }
+
+  /* check that the parameters will not exceed the total
+   * physical memory capacity of the system.
+   */
+  if (!task_memcheck(T))
+    return 0;
 
   /* check if a log filename was provided. */
   if (T->fname_log) {

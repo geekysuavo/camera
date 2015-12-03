@@ -43,7 +43,7 @@ typedef struct {
    *  @Pout: output pipe source structure pointer.
    *  @sch: schedule data structure pointer.
    */
-  pipe *Pin, *Pout;
+  nmrpipe *Pin, *Pout;
   sched *sch;
 
   /* floating-point structure members:

@@ -21,8 +21,8 @@
  */
 
 /* ensure once-only inclusion. */
-#ifndef __CAMERA_PIPE_H__
-#define __CAMERA_PIPE_H__
+#ifndef __CAMERA_NMRPIPE_H__
+#define __CAMERA_NMRPIPE_H__
 
 /* PIPE_HDRSTR_SZ_*: lengths of strings embedded within
  * the headers of pipe-format files.
@@ -43,10 +43,10 @@
 #define PIPE_QUAD_SE       3
 #define PIPE_QUAD_GE       4
 
-/* pipe_hdr: data structure for easily extracting information
+/* nmrpipe_hdr: data structure for easily extracting information
  * from the header blocks of pipe-format files.
  */
-struct pipe_hdr {
+struct nmrpipe_hdr {
   float magic;
   float format;
   float order;
@@ -222,12 +222,12 @@ struct pipe_hdr {
   float pad_end[28];
 };
 
-/* pipe: data structure that links together a pipe-format stream or
+/* nmrpipe: data structure that links together a pipe-format stream or
  * file with its file handle, header fields, and sampling schedule.
  */
 typedef struct {
   /* @hdr: structure holding all header fields in the file or stream. */
-  struct pipe_hdr hdr;
+  struct nmrpipe_hdr hdr;
 
   /* @sch: structure holding the sampling schedule and its inverse. */
   sched *sch;
@@ -238,29 +238,29 @@ typedef struct {
   char *fname;
   FILE *fh;
 }
-pipe;
+nmrpipe;
 
 /* function declarations: */
 
-pipe *pipesrc_open (char *fname, sched *sch);
+nmrpipe *pipesrc_open (char *fname, sched *sch);
 
-pipe *pipesink_open (char *fname, struct pipe_hdr *hdr);
+nmrpipe *pipesink_open (char *fname, struct nmrpipe_hdr *hdr);
 
-int pipesrc_nread (pipe *P);
+int pipesrc_nread (nmrpipe *P);
 
-int pipesrc_read1 (pipe *P, arr1 *x);
+int pipesrc_read1 (nmrpipe *P, arr1 *x);
 
-int pipesrc_read2 (pipe *P, arr2 *x);
+int pipesrc_read2 (nmrpipe *P, arr2 *x);
 
-int pipesrc_read3 (pipe *P, arr3 *x);
+int pipesrc_read3 (nmrpipe *P, arr3 *x);
 
-int pipesink_write1 (pipe *P, arr1 *x);
+int pipesink_write1 (nmrpipe *P, arr1 *x);
 
-int pipesink_write2 (pipe *P, arr2 *x);
+int pipesink_write2 (nmrpipe *P, arr2 *x);
 
-int pipesink_write3 (pipe *P, arr3 *x);
+int pipesink_write3 (nmrpipe *P, arr3 *x);
 
-void pipe_close (pipe *P);
+void nmrpipe_close (nmrpipe *P);
 
-#endif /* !__CAMERA_PIPE_H__ */
+#endif /* !__CAMERA_NMRPIPE_H__ */
 

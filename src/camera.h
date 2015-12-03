@@ -25,6 +25,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <math.h>
 
 /* include the openmp library header. */
@@ -40,7 +41,7 @@
 #include "arr.h"
 #include "fft.h"
 #include "sched.h"
-#include "pipe.h"
+#include "nmrpipe.h"
 #include "task.h"
 #include "util.h"
 
