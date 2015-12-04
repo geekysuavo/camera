@@ -28,292 +28,247 @@
  */
 #define N_BUF  256
 
-/* sched_init(): allocate an empty schedule structure pointer.
- *
- * returns:
- *  newly allocated schedule structure pointer with empty index arrays,
- *  or NULL if unable to allocate a pointer.
+/* FMT_[123]D: format parsing string for reading schedule files.
  */
-sched *sched_init (void) {
-  /* declare required variables:
-   *  @sch: pointer to the newly allocated schedule structure.
-   */
-  sched *sch;
-
-  /* allocate a new structure pointer. */
-  sch = (sched*) malloc(sizeof(sched));
-  if (!sch)
-    return NULL;
-
-  /* initialize the contents of the structure. */
-  sch->idx = NULL;
-  sch->w = NULL;
-  sch->n = 0;
-
-  /* return the allocated and prepared structure pointer. */
-  return sch;
-}
-
-/* sched_alloc1(): allocate and populate a one-dimensional schedule
- * from a file, specified with a filename string.
- *
- * arguments:
- *  @fname: filename of the input schedule to read.
- *  @n: size of the sampling grid.
- *
- * returns:
- *  pointer to a newly allocated and populated schedule structure,
- *  or NULL on failure.
- */
-sched *sched_alloc1 (const char *fname, int n) {
-  /* declare required variables:
-   *  @buf: character buffer to hold each line of schedule text.
-   *  @sch: pointer to the output sampling schedule.
-   *  @fh: file handle of the schedule text file.
-   *  @i: currently parsed grid index.
-   */
-  char buf[N_BUF];
-  sched *sch;
-  FILE *fh;
-  int i;
-
-  /* initialize the schedule structure pointer. */
-  sch = sched_init();
-  if (!sch)
-    return NULL;
-
-  /* attempt to open the input schedule file. */
-  fh = fopen(fname, "r");
-  if (!fh)
-    return NULL;
-
-  /* loop until the end of the schedule file is reached. */
-  while (!feof(fh)) {
-    /* read a new line of text from the schedule file. */
-    if (fgets(buf, N_BUF, fh)) {
-      /* parse the line of text into a grid index. */
-      if (sscanf(buf, "%d", &i) == 1) {
-        /* check that the grid index is in bounds. */
-        if (i < 0 || i >= n) {
-          /* if not, output an error message and return null. */
-          failf("grid index out of bounds");
-          return NULL;
-        }
-
-        /* increment the schedule size and reallocate its array. */
-        sch->n++;
-        sch->idx = (int*) realloc(sch->idx, sch->n * sizeof(int));
-        if (!sch->idx)
-          return NULL;
-
-        /* store the new grid index into the schedule array. */
-        sch->idx[sch->n - 1] = i;
-      }
-    }
-  }
-
-  /* close the input file and return the schedule structure pointer. */
-  fclose(fh);
-  return sch;
-}
-
-/* sched_alloc2(): allocate and populate a two-dimensional schedule
- * from a file, specified with a filename string.
- *
- * arguments:
- *  @fname: filename of the input schedule to read.
- *  @n1: first-dimension size of the sampling grid.
- *  @n2: second-dimension size of the sampling grid.
- *
- * returns:
- *  pointer to a newly allocated and populated schedule structure,
- *  or NULL on failure.
- */
-sched *sched_alloc2 (const char *fname, int n1, int n2) {
-  /* declare required variables:
-   *  @buf: character buffer to hold each line of schedule text.
-   *  @i1: currently parsed first-dimension grid index.
-   *  @i2: currently parsed second-dimension grid index.
-   *  @sch: pointer to the output sampling schedule.
-   *  @fh: file handle of the schedule text file.
-   */
-  char buf[N_BUF];
-  int i1, i2;
-  sched *sch;
-  FILE *fh;
-
-  /* initialize the schedule structure pointer. */
-  sch = sched_init();
-  if (!sch)
-    return NULL;
-
-  /* attempt to open the input schedule file. */
-  fh = fopen(fname, "r");
-  if (!fh)
-    return NULL;
-
-  /* loop until the end of the schedule file is reached. */
-  while (!feof(fh)) {
-    /* read a new line of text from the schedule file. */
-    if (fgets(buf, N_BUF, fh)) {
-      /* parse the line of text into a grid index. */
-      if (sscanf(buf, "%d %d", &i1, &i2) == 2) {
-        /* check that the grid index is in bounds. */
-        if (i1 < 0 || i1 >= n1 ||
-            i2 < 0 || i2 >= n2) {
-          /* if not, output an error message and return null. */
-          failf("grid index out of bounds");
-          return NULL;
-        }
-
-        /* increment the schedule size and reallocate its array. */
-        sch->n++;
-        sch->idx = (int*) realloc(sch->idx, sch->n * sizeof(int));
-        if (!sch->idx)
-          return NULL;
-
-        /* pack and store the new grid index into the schedule array. */
-        sch->idx[sch->n - 1] = i1 + n1 * i2;
-      }
-    }
-  }
-
-  /* close the input file and return the schedule structure pointer. */
-  fclose(fh);
-  return sch;
-}
-
-/* sched_alloc3(): allocate and populate a three-dimensional schedule
- * from a file, specified with a filename string.
- *
- * arguments:
- *  @fname: filename of the input schedule to read.
- *  @n1: first-dimension size of the sampling grid.
- *  @n2: second-dimension size of the sampling grid.
- *  @n3: third-dimension size of the sampling grid.
- *
- * returns:
- *  pointer to a newly allocated and populated schedule structure,
- *  or NULL on failure.
- */
-sched *sched_alloc3 (const char *fname, int n1, int n2, int n3) {
-  /* declare required variables:
-   *  @buf: character buffer to hold each line of schedule text.
-   *  @i1: currently parsed first-dimension grid index.
-   *  @i2: currently parsed second-dimension grid index.
-   *  @i3: currently parsed third-dimension grid index.
-   *  @sch: pointer to the output sampling schedule.
-   *  @fh: file handle of the schedule text file.
-   */
-  char buf[N_BUF];
-  int i1, i2, i3;
-  sched *sch;
-  FILE *fh;
-
-  /* initialize the schedule structure pointer. */
-  sch = sched_init();
-  if (!sch)
-    return NULL;
-
-  /* attempt to open the input schedule file. */
-  fh = fopen(fname, "r");
-  if (!fh)
-    return NULL;
-
-  /* loop until the end of the schedule file is reached. */
-  while (!feof(fh)) {
-    /* read a new line of text from the schedule file. */
-    if (fgets(buf, N_BUF, fh)) {
-      /* parse the line of text into a grid index. */
-      if (sscanf(buf, "%d %d %d", &i1, &i2, &i3) == 3) {
-        /* check that the grid index is in bounds. */
-        if (i1 < 0 || i1 >= n1 ||
-            i2 < 0 || i2 >= n2 ||
-            i3 < 0 || i3 >= n3) {
-          /* if not, output an error message and return null. */
-          failf("grid index out of bounds");
-          return NULL;
-        }
-
-        /* increment the schedule size and reallocate its array. */
-        sch->n++;
-        sch->idx = (int*) realloc(sch->idx, sch->n * sizeof(int));
-        if (!sch->idx)
-          return NULL;
-
-        /* pack and store the new grid index into the schedule array. */
-        sch->idx[sch->n - 1] = i1 + n1 * i2 + n1 * n2 * i3;
-      }
-    }
-  }
-
-  /* close the input file and return the schedule structure pointer. */
-  fclose(fh);
-  return sch;
-}
+#define FMT_1D "%d"
+#define FMT_2D "%d %d"
+#define FMT_3D "%d %d %d"
 
 /* sched_alloc(): allocate and populate a schedule data structure
  * from a file, specified with a filename string.
  *
  * arguments:
  *  @fname: filename of the input schedule to read.
- *  @dims: number of dimensions in the sampling grid.
- *  @n1: first-dimension size of the sampling grid.
- *  @n2: second-dimension size of the sampling grid.
- *  @n3: third-dimension size of the sampling grid.
  *
  * returns:
  *  pointer to a newly allocated and populated schedule structure,
  *  or NULL on failure.
  */
-sched *sched_alloc (const char *fname, int dims,
-                    int n1, int n2, int n3) {
-  /* determine which dimensionality to use. */
-  switch (dims) {
-    /* one-dimensional. */
-    case 1:
-      return sched_alloc1(fname, n1);
+sched *sched_alloc (const char *fname) {
+  /* declare required variables:
+   *  @sch: pointer to the newly allocated schedule structure.
+   *  @buf: character buffer to hold each line of schedule text.
+   *  @i1, @i2, @i3: parsed grid indices.
+   *  @dscan: number of parsed indices.
+   *  @fh: input file handle.
+   */
+  int dscan, i1, i2, i3;
+  char buf[N_BUF];
+  sched *sch;
+  FILE *fh;
 
-    /* two-dimensional. */
-    case 2:
-      return sched_alloc2(fname, n1, n2);
-
-    /* three-dimensional. */
-    case 3:
-      return sched_alloc3(fname, n1, n2, n3);
+  /* allocate a new structure pointer. */
+  sch = (sched*) malloc(sizeof(sched));
+  if (!sch) {
+    /* if unsuccessful, output an error message and return. */
+    failf("failed to allocate schedule pointer");
+    return NULL;
   }
 
-  /* if an unsupported dimensionality was passed, return failure. */
-  return NULL;
+  /* initialize the contents of the structure. */
+  sch->idx = NULL;
+  sch->w = NULL;
+  sch->n = 0;
+  sch->d = 0;
+  sch->n1 = 0;
+  sch->n2 = 0;
+  sch->n3 = 0;
+
+  /* check that the input filename is defined. */
+  if (!fname) {
+    /* if not, output an error message and return. */
+    failf("schedule filename not supplied");
+    sched_free(sch);
+    return NULL;
+  }
+
+  /* open the input file. */
+  fh = fopen(fname, "r");
+  if (!fh) {
+    /* if unsuccessful, output an error message and return. */
+    failf("failed to open schedule file '%s'", fname);
+    sched_free(sch);
+    return NULL;
+  }
+
+  /* attempt to read the first line of text from the schedule. */
+  if (!fgets(buf, N_BUF, fh)) {
+    /* if unsuccessful, output an error message and return. */
+    failf("failed to read from '%s'", fname);
+    sched_free(sch);
+    fclose(fh);
+    return NULL;
+  }
+
+  /* check for the line format of each dimensionality. */
+  if (sscanf(buf, FMT_3D, &i1, &i2, &i3) == 3) {
+    /* set three dimensions. */
+    sch->d = 3;
+  }
+  else if (sscanf(buf, FMT_2D, &i1, &i2) == 2) {
+    /* set two dimensions. */
+    sch->d = 2;
+  }
+  else if (sscanf(buf, FMT_1D, &i1) == 1) {
+    /* set one dimension. */
+    sch->d = 1;
+  }
+
+  /* check for a sane dimensionality. */
+  if (sch->d == 0) {
+    /* if not sane, output an error message and return. */
+    failf("failed to determine schedule dimensionality");
+    sched_free(sch);
+    fclose(fh);
+    return NULL;
+  }
+
+  /* seek back to the beginning of the schedule file. */
+  if (fseek(fh, SEEK_SET, 0)) {
+    /* if unsuccessful, output an error message and return. */
+    failf("failed to seek within the schedule file");
+    sched_free(sch);
+    fclose(fh);
+    return NULL;
+  }
+
+  /* loop until the end of the schedule file is reached. */
+  while (!feof(fh)) {
+    /* read a new line of text from the schedule file. */
+    if (fgets(buf, N_BUF, fh)) {
+      /* initialize the indices. */
+      i1 = i2 = i3 = 0;
+
+      /* parse based on the dimensionality. */
+      switch (sch->d) {
+        /* one-dimensional. */
+        case 1:
+          dscan = sscanf(buf, FMT_1D, &i1);
+          break;
+
+        /* two-dimensional. */
+        case 2:
+          dscan = sscanf(buf, FMT_2D, &i1, &i2);
+          break;
+
+        /* three-dimensional. */
+        case 3:
+          dscan = sscanf(buf, FMT_3D, &i1, &i2, &i3);
+          break;
+
+        /* else. won't happen. */
+        default:
+          dscan = 0;
+          break;
+      }
+
+      /* check for a successful parse. */
+      if (dscan != sch->d) {
+        /* if not, output an error message and return. */
+        failf("failed to parse line %d of '%s'", sch->n + 1, fname);
+        sched_free(sch);
+        fclose(fh);
+        return NULL;
+      }
+
+      /* reallocate the index array. */
+      sch->n++;
+      sch->idx = (int*) realloc(sch->idx, 3 * sch->n * sizeof(int));
+      if (!sch->idx) {
+        /* if unsuccessful, output an error message and return. */
+        failf("failed to reallocate schedule array");
+        sched_free(sch);
+        fclose(fh);
+        return NULL;
+      }
+
+      /* store the parsed indices. */
+      sch->idx[3 * (sch->n - 1) + 0] = i1;
+      sch->idx[3 * (sch->n - 1) + 1] = i2;
+      sch->idx[3 * (sch->n - 1) + 2] = i3;
+
+      /* update the maximum grid indices. */
+      if (i1 > sch->n1) sch->n1 = i1;
+      if (i2 > sch->n2) sch->n2 = i2;
+      if (i3 > sch->n3) sch->n3 = i3;
+    }
+  }
+
+  /* transform the maximum grid indices into powers of two. */
+  sch->n1 = nextpow2(sch->n1);
+  sch->n2 = nextpow2(sch->n2);
+  sch->n3 = nextpow2(sch->n3);
+
+  /* close the input file handle. */
+  fclose(fh);
+
+  /* return the allocated and prepared structure pointer. */
+  return sch;
 }
 
-/* sched_free(): free all heap-allocated memory within a schedule.
+/* sched_pack(): pack the parsed indices in a schedule array into linear
+ * indices based on the current dimensionality and sizes.
  *
  * arguments:
- *  @sch: pointer to the data structure to free.
+ *  @sch: pointer to the schedule structure to modify.
+ *
+ * returns:
+ *  integer indicating whether (1) or not (0) packing succeeded.
  */
-void sched_free (sched *sch) {
-  /* return if the structure pointer is null. */
-  if (!sch)
-    return;
+int sched_pack (sched *sch) {
+  /* declare required variables:
+   *  @i: packed value array index.
+   *  @j: unpacked value array index.
+   *  @i1, @i2, @i3: unpacked value.
+   */
+  int i, j, i1, i2, i3;
 
-  /* check if the index array is allocated. */
-  if (sch->idx) {
-    /* if so, free the index array. */
-    free(sch->idx);
-    sch->idx = NULL;
+  /* loop over the packed index counts. */
+  for (i = 0, j = 0; i < sch->n; i++, j += 3) {
+    /* get the unpacked values from the array. */
+    i1 = sch->idx[j];
+    i2 = sch->idx[j + 1];
+    i3 = sch->idx[j + 2];
+
+    /* check that the first-dimension index is in bounds. */
+    if (sch->d >= 1 && i1 >= sch->n1) {
+      failf("grid x-index out of bounds (%d >= %d)", i1, sch->n1);
+      return 0;
+    }
+
+    /* check that the second-dimension index is in bounds. */
+    if (sch->d >= 2 && i2 >= sch->n2) {
+      failf("grid y-index out of bounds (%d >= %d)", i2, sch->n2);
+      return 0;
+    }
+
+    /* check that the third-dimension index is in bounds. */
+    if (sch->d >= 3 && i3 >= sch->n3) {
+      failf("grid z-index out of bounds (%d >= %d)", i3, sch->n3);
+      return 0;
+    }
+
+    /* pack the indices together. this general statement works for
+     * all dimensionalities because the sizes of unused dimensions
+     * will be zero.
+     */
+    sch->idx[i] = i1 + sch->n1 * i2 + sch->n1 * sch->n2 * i3;
   }
 
-  /* free the structure pointer. */
-  free(sch);
-  sch = NULL;
+  /* reallocate the schedule index array. */
+  sch->idx = (int*) realloc(sch->idx, sch->n * sizeof(int));
+  if (!sch->idx)
+    return 0;
+
+  /* return success. */
+  return 1;
 }
 
 /* sched_kernel(): compute a set of convolution kernel coefficients for
  * use during reconstruction.
  *
  * arguments:
- *  @sch: pointer to the schedule structure pointer.
+ *  @sch: pointer to the schedule structure to modify.
  *  @dims: number of grid dimensions.
  *  @n1, @J1, @w1, @sw1: first-dimension parameters.
  *  @n2, @J2, @w2, @sw2: second-dimension parameters.
@@ -388,5 +343,27 @@ int sched_kernel (sched *sch, int dims,
 
   /* return success. */
   return 1;
+}
+
+/* sched_free(): free all heap-allocated memory within a schedule.
+ *
+ * arguments:
+ *  @sch: pointer to the data structure to free.
+ */
+void sched_free (sched *sch) {
+  /* return if the structure pointer is null. */
+  if (!sch)
+    return;
+
+  /* check if the index array is allocated. */
+  if (sch->idx) {
+    /* if so, free the index array. */
+    free(sch->idx);
+    sch->idx = NULL;
+  }
+
+  /* free the structure pointer. */
+  free(sch);
+  sch = NULL;
 }
 

@@ -39,10 +39,10 @@
    -in       Input filename.                                [stdin]\n\
    -out      Output filename.                              [stdout]\n\
    -sched    Sampling schedule filename.                  [nuslist]\n\
-   -dims     Number of dimensions to reconstruct.               [1]\n\
-   -xN       Final length of the x-dimension.                   [0]\n\
-   -yN       Final length of the y-dimension.                   [0]\n\
-   -zN       Final length of the z-dimension.                   [0]\n\
+   -dims     Number of dimensions to reconstruct.            [auto]\n\
+   -xN       Final complex length of the x-dimension.        [auto]\n\
+   -yN       Final complex length of the y-dimension.        [auto]\n\
+   -zN       Final complex length of the z-dimension.        [auto]\n\
    -xJ       Deconvolution J-coupling of the x-dimension.       [0]\n\
    -yJ       Deconvolution J-coupling of the y-dimension.       [0]\n\
    -zJ       Deconvolution J-coupling of the z-dimension.       [0]\n\
@@ -59,6 +59,33 @@
 \n\
  Citation:\n\
    B. Worley, J. Magn. Reson., 2015, In preparation.\n\n"
+
+/* nextpow2(): compute the smallest power of two that is not less
+ * than a given value.
+ *
+ * arguments:
+ *  @n: the input value.
+ *
+ * returns:
+ *  the computed power of two, or zero if the input value is zero.
+ */
+int nextpow2 (int n) {
+  /* declare required variables:
+   *  @n2: the output power of two.
+   */
+  int n2;
+
+  /* check for a zero input. */
+  if (n == 0)
+    return 0;
+
+  /* loop until the value is identified. */
+  for (n2 = 1; n2 < n;)
+    n2 <<= 1;
+
+  /* return the computed value. */
+  return n2;
+}
 
 /* strdup(): duplicate the contents of a string in heap memory.
  *

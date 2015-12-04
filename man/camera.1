@@ -84,16 +84,22 @@ multiple space-delimited values. Indices should be zero-based, \fIi.e.\fR
 the first index is expected to be zero.
 .TP
 \fB\-dims\fR
-The number of dimensions to reconstruct in the dataset.
+The number of dimensions to reconstruct in the dataset. By default,
+\fBcamera\fR will attempt to guess the number of dimensions by reading
+the schedule file.
 .TP
 \fB\-xN\fR
 The number of complex points along the \fIx\fR-dimension of the dataset.
+By default, \fBxN\fR is set to the smallest power-of-two size that is
+not less than the largest \fIx\fR-index in the schedule file.
 .TP
 \fB\-yN\fR
 The number of complex points along the \fIy\fR-dimension of the dataset.
+The default value of \fByN\fR is set similarly to \fBxN\fR.
 .TP
 \fB\-zN\fR
 The number of complex points along the \fIz\fR-dimension of the dataset.
+The default value of \fBzN\fR is set similarly to \fBxN\fR.
 .TP
 \fB\-xJ\fR
 The J-coupling constant to be deconvolved from the \fIx\fR-dimension

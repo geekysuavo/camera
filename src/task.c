@@ -63,6 +63,23 @@
     } \
   }
 
+/* TASK_PARSE_FLAG(): preprocessor macro to parse a boolean flag argument
+ * from the command-line argument string array.
+ */
+#define TASK_PARSE_FLAG(opt, dest) \
+  if (strcmp(argv[i], opt) == 0) { \
+    dest = 1; \
+  }
+
+/* TASK_PARSE_ERR(): preprocessor macro to catch command-line argument
+ * string array parsing errors.
+ */
+#define TASK_PARSE_ERR() \
+  { \
+    failf("unsupported argument '%s'", argv[i]); \
+    return NULL; \
+  }
+
 /* function declarations for dimensionality-specific task_run() functions.
  */
 int task_run1 (task *T);
@@ -111,7 +128,7 @@ task *task_alloc (int argc, char **argv) {
   T->ny = 0;
   T->nz = 0;
   T->help = 0;
-  T->dims = 1;
+  T->dims = 0;
   T->iters = 250;
   T->threads = 1;
 
@@ -149,19 +166,8 @@ task *task_alloc (int argc, char **argv) {
     else TASK_PARSE("-delta",   "%f", T->delta)
     else TASK_PARSE("-sigma",   "%f", T->sigma)
     else TASK_PARSE("-lambda",  "%f", T->lambda)
-    else if (strcmp(argv[i], "-help") == 0) {
-      /* output the usage message to standard error, because the '-help'
-       * flag has been specified.
-       */
-      T->help = 1;
-    }
-    else {
-      /* output an error message and return failure, because this argument
-       * is not recognized by the program.
-       */
-      failf("unsupported argument '%s'", argv[i]);
-      return NULL;
-    }
+    else TASK_PARSE_FLAG("-help", T->help)
+    else TASK_PARSE_ERR()
 
     /* increment the argument index. */
     i++;
@@ -339,13 +345,6 @@ int task_run (task *T) {
     return 1;
   }
 
-  /* check that the dimension count is in bounds. */
-  if (T->dims < 1 || T->dims > 3) {
-    /* if not, output an error message and return failure. */
-    failf("unsupported dimension count %d", T->dims);
-    return 0;
-  }
-
   /* check that the iteration count is in bounds. */
   if (T->iters < 1) {
     /* if not, output an error message and return failure. */
@@ -381,6 +380,71 @@ int task_run (task *T) {
     return 0;
   }
 
+  /* read the schedule file. */
+  T->sch = sched_alloc(T->fname_sched);
+
+  /* check if the schedule file was read successfully. */
+  if (!T->sch) {
+    /* if not, output an error message and return failure. */
+    failf("failed to read schedule file");
+    return 0;
+  }
+
+  /* check if the dimension count was explicitly set. */
+  if (T->dims == 0) {
+    /* if not, use the value from the schedule file. */
+    T->dims = T->sch->d;
+  }
+  else {
+    /* if so, check the value against the schedule file. */
+    if (T->dims != T->sch->d) {
+      /* on mismatch, output an error message ... */
+      failf("schedule dimension count mismatch (%d != %d)",
+            T->dims, T->sch->d);
+
+      /* ... and return failure. */
+      return 0;
+    }
+  }
+
+  /* check that the dimension count is in bounds. */
+  if (T->dims < 1 || T->dims > 3) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported dimension count %d", T->dims);
+    return 0;
+  }
+
+  /* if the first-dimension size was not explicitly set, use
+   * the value guessed from the schedule file.
+   */
+  if (T->dims >= 1 && T->nx == 0)
+    T->nx = T->sch->n1;
+
+  /* if the second-dimension size was not explicitly set, use
+   * the value guessed from the schedule file.
+   */
+  if (T->dims >= 2 && T->ny == 0)
+    T->ny = T->sch->n2;
+
+  /* if the third-dimension size was not explicitly set, use
+   * the value guessed from the schedule file.
+   */
+  if (T->dims >= 3 && T->nz == 0)
+    T->nz = T->sch->n3;
+
+  /* update the schedule dimensionality and sizes for packing. */
+  T->sch->d = T->dims;
+  T->sch->n1 = T->nx << 1;
+  T->sch->n2 = T->ny << 1;
+  T->sch->n3 = T->nz << 1;
+
+  /* pack the schedule array values into linear indices. */
+  if (!sched_pack(T->sch)) {
+    /* if unsuccessful, output an error message and return failure. */
+    failf("failed to pack schedule into linear indices");
+    return 0;
+  }
+
   /* check that the parameters will not exceed the total
    * physical memory capacity of the system.
    */
@@ -398,17 +462,6 @@ int task_run (task *T) {
       failf("failed to open '%s' for logging", T->fname_log);
       return 0;
     }
-  }
-
-  /* read the schedule file of the appropriate dimensionality. */
-  T->sch = sched_alloc(T->fname_sched, T->dims,
-                       T->nx << 1, T->ny << 1, T->nz << 1);
-
-  /* check if the schedule file was read successfully. */
-  if (!T->sch) {
-    /* if not, output an error message and return failure. */
-    failf("failed to read schedule '%s'", T->fname_sched);
-    return 0;
   }
 
   /* open the input pipe source. */

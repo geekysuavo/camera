@@ -31,6 +31,8 @@
 
 /* function declarations: */
 
+int nextpow2 (int n);
+
 char *strdup (char *s);
 
 void usagef (void);

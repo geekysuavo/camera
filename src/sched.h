@@ -33,21 +33,30 @@ typedef struct {
    */
   int *idx;
   hx0 *w;
-  int n;
+
+  /* @n: number of sampled grid indices.
+   * @d: number of grid dimensions.
+   */
+  int n, d;
+
+  /* @n1, @n2, @n3: guesses of the schedule's underlying grid size.
+   */
+  int n1, n2, n3;
 }
 sched;
 
 /* function declarations: */
 
-sched *sched_alloc (const char *fname, int dims,
-                    int n1, int n2, int n3);
+sched *sched_alloc (const char *fname);
 
-void sched_free (sched *sch);
+int sched_pack (sched *sch);
 
 int sched_kernel (sched *sch, int dims,
                   int n1, hx0 J1, hx0 w1, hx0 sw1,
                   int n2, hx0 J2, hx0 w2, hx0 sw2,
                   int n3, hx0 J3, hx0 w3, hx0 sw3);
+
+void sched_free (sched *sch);
 
 #endif /* !__CAMERA_SCHED_H__ */
 
