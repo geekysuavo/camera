@@ -1,6 +1,6 @@
 
 /* CAMERA: convex accelerated maximum entropy reconstruction algorithm.
- * Copyright (C) 2015  Bradley Worley  <geekysuavo@gmail.com>.
+ * Copyright (C) 2015-2016  Bradley Worley  <geekysuavo@gmail.com>.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -133,6 +133,7 @@ task *task_alloc (int argc, char **argv) {
   T->threads = 1;
 
   /* initialize the float variables. */
+  T->accel = 500.0f;
   T->delta = 1.0f;
   T->sigma = 1.0f;
   T->lambda = 0.0f;
@@ -163,6 +164,7 @@ task *task_alloc (int argc, char **argv) {
     else TASK_PARSE("-zW",      "%f", T->wz)
     else TASK_PARSE("-iters",   "%d", T->iters)
     else TASK_PARSE("-threads", "%d", T->threads)
+    else TASK_PARSE("-accel",   "%f", T->accel)
     else TASK_PARSE("-delta",   "%f", T->delta)
     else TASK_PARSE("-sigma",   "%f", T->sigma)
     else TASK_PARSE("-lambda",  "%f", T->lambda)
@@ -356,6 +358,13 @@ int task_run (task *T) {
   if (T->threads < 1 || T->threads > 8192) {
     /* if not, output an error message and return failure. */
     failf("unsupported thread count %d", T->threads);
+    return 0;
+  }
+
+  /* check that the acceleration factor is in bounds. */
+  if (T->accel < 1.0f) {
+    /* if not, output an error message and return failure. */
+    failf("unsupported acceleration factor %.3f", T->accel);
     return 0;
   }
 

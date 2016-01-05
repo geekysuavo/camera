@@ -26,7 +26,7 @@ for i = 1 : length(lw)
   wfn = @(idx) exp(-lw(i) .* idx ./ 2367);
 
   % compute the reconstruction.
-  [x, f] = camera(b, sched, aim, lambda, def, 1, iters, 2, wfn);
+  [x, f] = camera(b, sched, aim, lambda, def, 100, 1, iters, 2, wfn);
   X = real(fftshift(fft(x)) .* ph);
   results = [results, X];
 end

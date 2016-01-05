@@ -11,14 +11,14 @@ load('input.dat.gz');
 % set up the global parameters.
 def = [1, 10];
 aim = 1e5;
-lambda = [5, 10, 100, 1000];
+lambda = [0.02, 0.05, 0.2, 2.5];
 iters = 500;
 
 % compute the reconstructions.
 results = [1 : iters]';
 for i = 1 : length(def)
   for k = 1 : length(lambda)
-    [x, f] = camera(b, sched, aim, lambda(k), def(i), 1, iters);
+    [x, f] = camera(b, sched, aim, lambda(k), def(i), 1, 1, iters);
     results = [results, f];
   end
 end

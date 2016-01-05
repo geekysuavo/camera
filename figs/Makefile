@@ -59,7 +59,7 @@ clean:
 	rm -f $(PNG) $(TIF)
 
 distclean: clean
-	$(NAME) -C bench clean
+	$(MAKE) -C bench clean
 	$(MAKE) -C conv-by-def clean
 	$(MAKE) -C conv-by-lambda clean
 	$(MAKE) -C conv-by-method clean

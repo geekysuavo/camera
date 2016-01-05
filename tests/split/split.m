@@ -37,7 +37,7 @@ for k = 1 : 2
 
   % compute the maxent reconstructions.
   for i = 1 : length(aim)
-    [x, f] = camera(b, sched, aim(i), lambda, def, 1, iters);
+    [x, f] = camera(b, sched, aim(i), lambda, def, 1, 1, iters);
     X = real(fftshift(fft([x; zeros(size(x))])));
     results = [results, X];
   end

@@ -16,5 +16,6 @@ set ytics 0.1
 plot 'output.dat' \
     u 1:2 w l lt 3 lw 1.0 lc rgb '#222222' t 'FFM, G.D.', \
  '' u 1:3 w l lt 2 lw 1.0 lc rgb '#222222' t 'FFM, C.G.', \
- '' u 1:4 w l lt 1 lw 1.2 lc rgb '#222222' t 'CAMERA'
+ '' u 1:4 w l lt 5 lw 1.2 lc rgb '#222222' t 'CAMERA, C.S.', \
+ '' u 1:5 w l lt 1 lw 1.5 lc rgb '#222222' t 'CAMERA, L.S.'
 

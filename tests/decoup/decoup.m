@@ -25,7 +25,7 @@ for j = 1 : length(J)
   wfn = @(idx) cos(pi .* J(j) .* idx ./ 10571);
 
   % compute the reconstruction.
-  [x, f] = camera(b, sched, aim, lambda, def, 1, iters, 1, wfn);
+  [x, f] = camera(b, sched, aim, lambda, def, 100, 1, iters, 1, wfn);
   X = real(fftshift(fft(i .* [x; zeros(size(x))])));
   results = [results, X];
 end

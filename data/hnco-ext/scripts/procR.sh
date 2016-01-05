@@ -7,8 +7,6 @@ xyz2pipe -in ../data/yzx/hnco%04d.nus -x  | \
     -xN 128             \
     -yN 256             \
     -iters 100          \
-    -delta 1            \
-    -sigma 1            \
     -threads 8        | \
   pipe2xyz -out ../data/yzx/hnco%04d.ft1 -x -ov
 

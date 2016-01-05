@@ -92,8 +92,3 @@ lines:
 	@echo " WC"
 	@wc -l src/*.[ch]
 
-# dist: target to generate a source tarball.
-dist: clean
-	@echo " TGZ"
-	@tar czf ../camera-latest.tgz bin man src Makefile README.md
-

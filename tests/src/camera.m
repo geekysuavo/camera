@@ -1,6 +1,6 @@
 % camera: barebones 1d camera reconstruction function.
-function [x, fvals] = ...
-camera (b, sched, sigma, lambda, defs, Mout, Min, nzf, Wfn)
+function [x, fvals, nops] = ...
+camera (b, sched, sigma, lambda, defs, def0, Mout, Min, nzf, Wfn)
   % check for a minimum number of arguments.
   if (nargin < 2)
     error('at least two arguments required');
@@ -33,26 +33,32 @@ camera (b, sched, sigma, lambda, defs, Mout, Min, nzf, Wfn)
     defs = 0.1 * sigma;
   end
 
+  % check for a default line search argument.
+  if (nargin < 6 || isempty(def0))
+    % none supplied, use a default value.
+    def0 = 1;
+  end
+
   % check for an outer loop count argument.
-  if (nargin < 6 || isempty(Mout))
+  if (nargin < 7 || isempty(Mout))
     % none supplied, use a default value.
     Mout = 1;
   end
 
   % check for an inner loop count argument.
-  if (nargin < 7 || isempty(Min))
+  if (nargin < 8 || isempty(Min))
     % none supplied, use a default value.
     Min = 500;
   end
 
   % check for a zero-fill count argument.
-  if (nargin < 8 || isempty(nzf))
+  if (nargin < 9 || isempty(nzf))
     % none supplied, use a default value.
     nzf = 1;
   end
 
   % check for a weight argument.
-  if (nargin < 9 || isempty(Wfn))
+  if (nargin < 10 || isempty(Wfn))
     % none supplied, use a default value.
     Wfn = @(idx) 1;
   end
@@ -78,11 +84,13 @@ camera (b, sched, sigma, lambda, defs, Mout, Min, nzf, Wfn)
   % initialize the objective value vector.
   fvals = [];
 
+  % initialize the operation count vector.
+  nops = 0;
+
   % initialize the reconstruction vectors.
   b = [b; zeros(N - N0, 1)];
   x = b;
-  y = zeros(N, 1);
-  z = zeros(N, 1);
+  y = b;
 
   % check that the defs vector is the correct size.
   if (length(defs) != Mout)
@@ -93,54 +101,69 @@ camera (b, sched, sigma, lambda, defs, Mout, Min, nzf, Wfn)
   for mo = 1 : Mout
     % get the def value and compute the Lipschitz constant.
     def = defs(mo);
-    L = 0.5 / def;
+    Lf = 0.5 / def;
+    L = 0.5 / (def * def0);
 
-    % initialize the prox-center and weighted gradient sum.
-    xc = x;
-    adf = zeros(N, 1);
+    % compute the initial spectral estimate.
+    X = fft(x);
+    nops(end)++;
 
     % loop over the inner indices.
     for mi = 1 : Min
-      % compute the current spectral estimate.
-      X = fft(x);
-
       % compute the functional values.
       [fX, dfdX] = camera_functional(X, def);
+      fvals = [fvals; fX];
 
       % compute and store the time-domain gradient.
       dfdx = N .* ifft(dfdX);
-      fvals = [fvals; fX];
+      nops(end)++;
 
-      % compute the new coupling constants.
-      alpha = 0.5 * (mi + 1);
-      tau = 2 / (mi + 3);
+      % compute the velocity factor.
+      beta = (mi - 1) / (mi + 2);
 
-      % update the weighted gradient sum.
-      adf += alpha .* dfdx;
+      % enter the line-search loop.
+      do
+        % compute a projected gradient update.
+        if (isempty(lambda))
+          lz = max(0, (L/vareps) .* norm(b - A .* (x - dfdx ./ L)) - L);
+        else
+          lz = lambda;
+        end
+        z = (1 ./ (1 + (lz / L) .* AtA)) .* ...
+            (x + (lz / L) .* At .* b - dfdx ./ L);
 
-      % compute a y-update.
-      if (isempty(lambda))
-        ly = max(0, (L/vareps) .* norm(b - A .* (x - dfdx ./ L)) - L);
-      else
-        ly = lambda;
-      end
-      gy = 1 ./ (1 + (ly / L) .* AtA);
-      y = gy .* (x + (ly / L) .* At .* b - dfdx ./ L);
+        % compute a potential x-update.
+        z = (1 + beta) .* z - beta .* y;
+        X = fft(z);
+        nops(end)++;
 
-      % compute a z-update.
-      if (isempty(lambda))
-        lz = max(0, (L/vareps) .* norm(b - A .* (xc - adf ./ L)) - L);
-      else
-        lz = lambda;
-      end
-      gz = 1 ./ (1 + (lz / L) .* AtA);
-      z = gz .* (xc + (lz / L) .* At .* b - adf ./ L);
+        % check for a primary termination criterion.
+        ok = 1;
+        if (L >= Lf)
+          break;
+        end
 
-      % compute an x-update.
-      x = tau .* z + (1 - tau) .* y;
+        % check for a secondary termination criterion.
+        [fnew, junk] = camera_functional(X, def);
+        if (fnew > fX)
+          % backtrack by a fixed factor of two.
+          L = min(Lf, 2 * L);
+          ok = 0;
+        end
+      until (ok == 1);
+
+      % store the accepted new values.
+      y = (z + beta .* y) ./ (1 + beta);
+      x = z;
     end
+
+    % update the operation count vector.
+    nops = [nops; 0];
   end
 
   % truncate the reconstructed vector.
   x(N / 2 + 1 : end) = [];
+
+  % truncate the operation count vector.
+  nops(end) = [];
 end

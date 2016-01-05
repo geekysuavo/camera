@@ -1,6 +1,6 @@
 
 /* CAMERA: convex accelerated maximum entropy reconstruction algorithm.
- * Copyright (C) 2015  Bradley Worley  <geekysuavo@gmail.com>.
+ * Copyright (C) 2015-2016  Bradley Worley  <geekysuavo@gmail.com>.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,12 +51,14 @@ typedef struct {
    *  @delta: default parameter for the regularization functional.
    *  @sigma: noise amplitude estimate for constant-aim mode.
    *  @lambda: Lagrange multiplier for constant-lambda mode.
-   *  @L: Lipschitz constant for the regularization functional.
+   *  @L0, @Lf: Lipschitz constants for the regularization functional.
    *  @wx, @wy, @wz: exponential deconvolution linewidths.
    *  @jx, @jy, @jz: J-coupling deconvolution frequencies.
+   *  @accel: line search acceleration factor.
    */
-  hx0 epsilon, delta, sigma, lambda, L;
+  hx0 epsilon, delta, sigma, lambda, L0, Lf;
   hx0 wx, wy, wz, jx, jy, jz;
+  hx0 accel;
 
   /* integer structure members:
    *  @help: whether or not to print the usage message.

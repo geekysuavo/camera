@@ -1,6 +1,6 @@
 
 /* CAMERA: convex accelerated maximum entropy reconstruction algorithm.
- * Copyright (C) 2015  Bradley Worley  <geekysuavo@gmail.com>.
+ * Copyright (C) 2015-2016  Bradley Worley  <geekysuavo@gmail.com>.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,7 +29,7 @@
  */
 #define USAGE_MSG "\
  CAMERA: Convex Accelerated Maximum Entropy Reconstruction Algorithm\n\
- Copyright (C) 2015  Bradley Worley  <geekysuavo@gmail.com>\n\
+ Copyright (C) 2015-2016  Bradley Worley  <geekysuavo@gmail.com>\n\
  Released under the GNU General Public License (ver. 3.0)\n\
 \n\
  Usage:\n\
@@ -51,6 +51,7 @@
    -zW       Deconvolution linewidth of the z-dimension.        [0]\n\
    -iters    Number of iterations to perform.                 [250]\n\
    -threads  Number of parallel threads to execute.             [1]\n\
+   -accel    Initial line search acceleration factor.         [500]\n\
    -delta    Regularization functional background value.      [1.0]\n\
    -sigma    Constant-aim mode data noise estimate.           [1.0]\n\
    -lambda   Constant-lambda mode Lagrange multiplier.        [off]\n\
@@ -58,7 +59,7 @@
    -help     Print this help message.\n\
 \n\
  Citation:\n\
-   B. Worley, J. Magn. Reson., 2015, In preparation.\n\n"
+   B. Worley, J. Magn. Reson., 2016, Under review.\n\n"
 
 /* nextpow2(): compute the smallest power of two that is not less
  * than a given value.

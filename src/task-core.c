@@ -1,6 +1,6 @@
 
 /* CAMERA: convex accelerated maximum entropy reconstruction algorithm.
- * Copyright (C) 2015  Bradley Worley  <geekysuavo@gmail.com>.
+ * Copyright (C) 2015-2016  Bradley Worley  <geekysuavo@gmail.com>.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -61,45 +61,58 @@
  * arguments:
  *  @b: input array of measured data, infilled with zeros.
  *  @x: output array of reconstructed values.
- *  @y: array to hold gradient descent updates.
- *  @z: array to hold mirror descent updates.
+ *  @y: array to hold projected gradient updates.
+ *  @z: array to hold accelerated updates.
  *  @g: array to hold computed gradients.
- *  @h: array to hold weighted gradient sums.
+ *  @X: array to hold spectral estimates.
  *  @sch: pointer to the schedule data structure.
  *  @iters: number of iterations to perform.
- *  @L: Lipschitz constant for regularization.
+ *  @L0: initial Lipschitz constant for regularization.
+ *  @Lf: final Lipschitz constant for regularization.
  *  @eps: measured data inequality tolerance.
  *  @lmb: constant-lambda value, or zero.
  *  @flog: logging output file handle, or null.
  *  @ilog: slice index for logging.
  */
 void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
-                   ARR(D) *z, ARR(D) *g, ARR(D) *h,
-                   sched *sch, const int iters, const hx0 L,
+                   ARR(D) *z, ARR(D) *g, ARR(D) *X,
+                   sched *sch, const int iters,
+                   const hx0 L0, const hx0 Lf,
                    const hx0 eps, const hx0 lmb,
                    FILE *flog, const int ilog) {
   /* declare required local variables:
-   *  @ly, @lz: Lagrange multipliers for @y and @z updates.
-   *  @alpha, @tau: coupling constants for acceleration.
+   *  @L, @Linv: current Lipschitz constant and its inverse.
+   *  @lz: Lagrange multiplier for projected gradient updates.
+   *  @beta: velocity factor for Nesterov acceleration.
    *  @kf: variable used for scaling in array updates.
    *  @fobj: current value of the objective function.
+   *  @fnew: new value of the objective function.
    *  @i: general-purpose loop counter.
    *  @iter: iteration loop counter.
+   *  @accept: step acceptance boolean.
    *  @n: schedule index count.
    *  @N: array point count.
    *  @K: schedule index array.
    *  @W: schedule weight array.
    */
-  hx0 ly, lz, alpha, tau, kf, fobj = 0.0f;
-  int i, iter, n, N, *K;
+  hx0 L, Linv, lz, beta, kf, fobj, fnew;
+  int i, iter, accept, n, N, *K;
   hx0 *W;
 
-  /* compute the inverse Lipschitz constant. */
-  const hx0 Linv = 1.0f / L;
+  /* initialize the objective function values. */
+  fobj = fnew = 0.0f;
 
-  /* initialize the output and weighted gradient arrays. */
+  /* compute the initial Lipschitz constant and its inverse. */
+  L = L0;
+  Linv = 1.0f / L;
+
+  /* initialize the output and update arrays. */
   ARR_COPY(D)(x, b);
-  ARR_ZERO(D)(h);
+  ARR_COPY(D)(y, b);
+
+  /* initialize the frequency-domain array. */
+  ARR_COPY(D)(X, b);
+  FFT(D)(X);
 
   /* initialize the schedule index and weight variables. */
   K = sch->idx;
@@ -109,100 +122,104 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
   n = sch->n;
   N = g->n;
 
+  /* initialize the objective value. */
+  for (i = 0, fobj = 0.0f; i < N; i++)
+    fobj += HX_FUNC(D)(X->x[i], Lf);
+
   /* loop over the number of iterations. */
   for (iter = 1; iter <= iters; iter++) {
-    /* compute the coupling constants of the current iteration. */
-    alpha = 0.5f * ((hx0) (iter + 1));
-    tau = 2.0f / ((hx0) (iter + 3));
+    /* compute the velocity factor for the current iteration. */
+    beta = ((hx0) (iter - 1)) / ((hx0) (iter + 2));
 
-    /* compute the current frequency-domain estimate. */
-    ARR_COPY(D)(g, x);
-    FFT(D)(g);
+    /* copy the current spectrum into the gradient array. */
+    ARR_COPY(D)(g, X);
 
-    /* check if the objective function value is required. */
-    if (flog) {
-      /* compute the current objective. */
-      for (i = 0, fobj = 0.0f; i < N; i++)
-        fobj += HX_FUNC(D)(g->x[i], L);
-    }
-
-    /* calculate the frequency-domain gradient. */
+    /* compute the frequency-domain gradient. */
     for (i = 0; i < N; i++)
-      g->x[i] = HX_GRAD(D)(g->x[i], L);
+      g->x[i] = HX_GRAD(D)(g->x[i], Lf);
 
     /* compute the time-domain gradient. */
     IFFT(D)(g);
 
-    /* determine whether constant-aim mode is enabled. */
-    if (lmb <= 0.0f) {
-      /* compute the sum of squares portion of the @y Lagrange multiplier. */
-      for (i = 0, ly = 0.0f; i < n; i++)
-        ly += HX_SUMSQ(D)(b->x[K[i]] - W[i] * x->x[K[i]]
-                              + Linv * W[i] * g->x[K[i]]);
+    /* loop until an acceptable step has been made. */
+    do {
+      /* determine whether constant-aim mode is enabled. */
+      if (lmb <= 0.0f) {
+        /* compute the sum of squares part of the Lagrange multiplier. */
+        for (i = 0, lz = 0.0f; i < n; i++)
+          lz += HX_SUMSQ(D)(b->x[K[i]] - W[i] * x->x[K[i]]
+                                + Linv * W[i] * g->x[K[i]]);
 
-      /* finish computing the @y Lagrange multiplier. */
-      ly = (L / eps) * hx_sqrt0(ly) - L;
-    }
-    else {
-      /* use a constant Lagrange multiplier. */
-      ly = lmb;
-    }
+        /* finish computing the @y Lagrange multiplier. */
+        lz = (L / eps) * hx_sqrt0(lz) - L;
+      }
+      else {
+        /* use a constant Lagrange multiplier. */
+        lz = lmb;
+      }
 
-    /* compute the unconstrained part of the @y update. */
-    for (i = 0; i < N; i++)
-      y->x[i] = x->x[i] - Linv * g->x[i];
+      /* compute the unconstrained part of the update. */
+      for (i = 0; i < N; i++)
+        z->x[i] = x->x[i] - Linv * g->x[i];
 
-    /* determine whether to constrain the @y update. */
-    if (ly > 0.0f) {
-      /* yes. compute the constraint contributions to the update. */
-      kf = Linv * ly;
-      for (i = 0; i < n; i++) {
-        y->x[K[i]] += kf * W[i] * b->x[K[i]];
-        y->x[K[i]] /= (1.0f + kf * W[i] * W[i]);
+      /* determine whether to constrain the update. */
+      if (lz > 0.0f) {
+        /* yes. compute the constraint contributions to the update. */
+        kf = Linv * lz;
+        for (i = 0; i < n; i++) {
+          z->x[K[i]] += kf * W[i] * b->x[K[i]];
+          z->x[K[i]] /= (1.0f + kf * W[i] * W[i]);
+        }
+      }
+
+      /* compute the new time-domain estimate. */
+      kf = 1.0f + beta;
+      for (i = 0; i < N; i++)
+        z->x[i] = kf * z->x[i] - beta * y->x[i];
+
+      /* compute the new frequency-domain estimate. */
+      ARR_COPY(D)(X, z);
+      FFT(D)(X);
+
+      /* compute the new objective value. */
+      for (i = 0, fnew = 0.0f; i < N; i++)
+        fnew += HX_FUNC(D)(X->x[i], Lf);
+
+      /* determine whether the Lipschitz constant is adjustable. */
+      accept = 1;
+      if (L >= Lf)
+        break;
+
+      /* determine whether the step is acceptable. */
+      if (fnew > fobj) {
+        /* unacceptable. indicate that a new step must be computed. */
+        accept = 0;
+
+        /* adjust the Lipschitz constant. */
+        L *= 2.0f;
+        if (L >= Lf)
+          L = Lf;
+
+        /* update the inverse Lipschitz constant. */
+        Linv = 1.0f / L;
       }
     }
+    while (!accept);
 
-    /* update the weighted sum of prior gradients. */
+    /* compute the new time-domain projected gradient update. */
+    kf = 1.0f / (1.0f + beta);
     for (i = 0; i < N; i++)
-      h->x[i] += alpha * g->x[i];
+      y->x[i] = kf * (z->x[i] + beta * y->x[i]);
 
-    /* determine whether constant-aim mode is enabled. */
-    if (lmb <= 0.0f) {
-      /* compute the sum of squares portion of the @z Lagrange multiplier. */
-      for (i = 0, lz = 0.0f; i < n; i++)
-        lz += HX_SUMSQ(D)((1.0f - W[i]) * b->x[K[i]]
-                          + Linv * W[i] * h->x[K[i]]);
+    /* update the time-domain estimate. */
+    ARR_COPY(D)(x, z);
 
-      /* finish computing the @z Lagrange multiplier. */
-      lz = (L / eps) * hx_sqrt0(lz) - L;
-    }
-    else {
-      /* use a constant Lagrange multiplier. */
-      lz = lmb;
-    }
-
-    /* compute the unconstrained part of the @z update. */
-    for (i = 0; i < N; i++)
-      z->x[i] = b->x[i] - Linv * h->x[i];
-
-    /* determine whether to constrain the @z update. */
-    if (lz > 0.0f) {
-      /* yes. compute the constraint contributions to the update. */
-      kf = Linv * lz;
-      for (i = 0; i < n; i++) {
-        z->x[K[i]] += kf * W[i] * b->x[K[i]];
-        z->x[K[i]] /= (1.0f + kf * W[i] * W[i]);
-      }
-    }
-
-    /* compute the new coupled time-domain estimate. */
-    kf = 1.0f - tau;
-    for (i = 0; i < N; i++)
-      x->x[i] = tau * z->x[i] + kf * y->x[i];
+    /* update the objective value. */
+    fobj = fnew;
 
     /* output a log message, if necessary. */
     if (flog)
-      fprintf(flog, "%6d %6d %.4le %.4le %.4le\n", ilog, iter, ly, lz, fobj);
+      fprintf(flog, "%6d %6d %.6e %.6e %.6e\n", ilog, iter, L, lz, fobj);
   }
 }
 
@@ -216,13 +233,13 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
  */
 int TASK_RUN(D) (task *T) {
   /* declare required reconstruction variables:
-   *  @b, @x, @y, @z, @g, @h: arrays of hypercomplex array pointers.
+   *  @b, @x, @y, @z, @g, @X: arrays of hypercomplex array pointers.
    *  @i: reconstruction loop counter.
    *  @ntot: total number of reconstructions.
    *  @nrem: number of remaining reconstructions.
    *  @ncur: current number of parallel reconstructions.
    */
-  ARR(D) **b, **x, **y, **z, **g, **h;
+  ARR(D) **b, **x, **y, **z, **g, **X;
   int i, ntot, nrem, ncur;
 
   /* allocate arrays to hold parallel data structures. */
@@ -231,10 +248,10 @@ int TASK_RUN(D) (task *T) {
   y = (ARR(D)**) malloc(T->threads * sizeof(ARR(D)*));
   z = (ARR(D)**) malloc(T->threads * sizeof(ARR(D)*));
   g = (ARR(D)**) malloc(T->threads * sizeof(ARR(D)*));
-  h = (ARR(D)**) malloc(T->threads * sizeof(ARR(D)*));
+  X = (ARR(D)**) malloc(T->threads * sizeof(ARR(D)*));
 
   /* check that the arrays were allocated successfully. */
-  if (!b || !x || !y || !z || !g || !h) {
+  if (!b || !x || !y || !z || !g || !X) {
     /* if not, output an error message and return failure. */
     failf("failed to allocate arrays");
     return 0;
@@ -248,19 +265,22 @@ int TASK_RUN(D) (task *T) {
     y[i] = ARR_ALLOC(D)(T->nx << 1, T->ny << 1, T->nz << 1);
     z[i] = ARR_ALLOC(D)(T->nx << 1, T->ny << 1, T->nz << 1);
     g[i] = ARR_ALLOC(D)(T->nx << 1, T->ny << 1, T->nz << 1);
-    h[i] = ARR_ALLOC(D)(T->nx << 1, T->ny << 1, T->nz << 1);
+    X[i] = ARR_ALLOC(D)(T->nx << 1, T->ny << 1, T->nz << 1);
 
     /* check that the arrays were allocated successfully. */
-    if (!b[i] || !x[i] || !y[i] || !z[i] || !g[i] || !h[i]) {
+    if (!b[i] || !x[i] || !y[i] || !z[i] || !g[i] || !X[i]) {
       /* if not, output an error message and return failure. */
       failf("failed to allocate arrays");
       return 0;
     }
   }
 
-  /* compute the tolerance and Lipschitz constant. */
+  /* compute the absolute tolerance value. */
   T->epsilon = sqrt(pow(2.0f, D) * ((hx0) T->sch->n)) * T->sigma;
-  T->L = 0.5f / T->delta;
+
+  /* compute the initial and final Lipschitz constants. */
+  T->L0 = 0.5f / (T->delta * T->accel);
+  T->Lf = 0.5f / T->delta;
 
   /* initialize the reconstruction loop counters. */
   ntot = pipesrc_nread(T->Pin);
@@ -282,8 +302,8 @@ int TASK_RUN(D) (task *T) {
     /* reconstruct the cubes in parallel. */
     #pragma omp parallel for private(i)
     for (i = 0; i < ncur; i++) {
-      TASK_CORE(D)(b[i], x[i], y[i], z[i], g[i], h[i], T->sch, T->iters,
-                   T->L, T->epsilon, T->lambda, T->fh_log,
+      TASK_CORE(D)(b[i], x[i], y[i], z[i], g[i], X[i], T->sch, T->iters,
+                   T->L0, T->Lf, T->epsilon, T->lambda, T->fh_log,
                    ntot - nrem + i + 1);
     }
 
@@ -306,7 +326,7 @@ int TASK_RUN(D) (task *T) {
     ARR_FREE(D)(y[i]);
     ARR_FREE(D)(z[i]);
     ARR_FREE(D)(g[i]);
-    ARR_FREE(D)(h[i]);
+    ARR_FREE(D)(X[i]);
   }
 
   /* free the array arrays. */
@@ -315,7 +335,7 @@ int TASK_RUN(D) (task *T) {
   free(y);
   free(z);
   free(g);
-  free(h);
+  free(X);
 
   /* return success. */
   return 1;

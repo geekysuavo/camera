@@ -56,7 +56,7 @@ for i = 1 : length(aim)
   % loop over the amplitudes.
   for j = 1 : length(A)
     % compute the maxent reconstruction.
-    [x, f] = camera(B.td{j}, sched, aim(i), lambda, def, 1, iters);
+    [x, f] = camera(B.td{j}, sched, aim(i), lambda, def, 1, 1, iters);
     xft = real(fftshift(fft(x)));
     a = [a; max(xft)];
   end

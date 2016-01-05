@@ -111,7 +111,7 @@ in **camera** to produce singlet spectra when coupling patterns are known.
 
 The [chsqc-cacb](chsqc-cacb/) directory holds the same 1H-13C HSQC as the
 [chsqc-ca](chsqc-ca/) directory, but with evolution times set to select for
-both alpha and beta carbons.
+both alpha and beta carbons. No deconvolution is performed for this dataset.
 
 ### hnco
 

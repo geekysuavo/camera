@@ -17,7 +17,7 @@ iters = [1, 200; 4, 10];
 % compute the reconstructions.
 results = [1 : iters(1,1) * iters(1,2)]';
 for k = 1 : rows(def)
-  [x, f] = camera(b, sched, aim, lambda, def(k,:), iters(k,1), iters(k,2));
+  [x, f] = camera(b, sched, aim, lambda, def(k,:), 1, iters(k,1), iters(k,2));
   f = [f; nan(rows(results) - length(f), 1)];
   results = [results, f];
 end

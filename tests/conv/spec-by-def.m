@@ -21,7 +21,7 @@ results = [[1 : length(B)]', B];
 
 % compute the reconstructions.
 for k = 1 : length(def)
-  [x, f] = camera(b, sched, aim, lambda, def(k), 1, iters);
+  [x, f] = camera(b, sched, aim, lambda, def(k), 1, 1, iters);
   X = real(fftshift(fft([x; zeros(size(x))])) .* ph);
   results = [results, X];
 end

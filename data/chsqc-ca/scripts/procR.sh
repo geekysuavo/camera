@@ -9,8 +9,7 @@ time                    \
   -dims 1               \
   -xN 2048              \
   -xJ 36                \
-  -iters 1000           \
-  -delta 2              \
+  -iters 800            \
   -sigma 7e5            \
   -threads 8
 

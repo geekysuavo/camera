@@ -8,8 +8,7 @@ time                    \
   -sched ../nuslist     \
   -dims 1               \
   -xN 2048              \
-  -iters 500            \
-  -delta 2              \
-  -sigma 1e3            \
+  -iters 400            \
+  -lambda 0.01          \
   -threads 8
 

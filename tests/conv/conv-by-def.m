@@ -17,7 +17,7 @@ iters = 500;
 % compute the reconstructions.
 results = [1 : iters]';
 for k = 1 : length(def)
-  [x, f] = camera(b, sched, aim, lambda, def(k), 1, iters);
+  [x, f] = camera(b, sched, aim, lambda, def(k), 1, 1, iters);
   results = [results, f];
 end
 

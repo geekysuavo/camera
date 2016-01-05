@@ -1,6 +1,6 @@
 .\" -*- nroff -*-
 .\"
-.\" Copyright (C) 2015 Bradley Worley <geekysuavo@gmail.com>.
+.\" Copyright (C) 2015-2016 Bradley Worley <geekysuavo@gmail.com>.
 .\"
 .\" This is free documentation; you can redistribute it and/or
 .\" modify it under the terms of the GNU General Public License as
@@ -30,7 +30,7 @@
 .ie \\n(.$=0:((0\\$1)*2u>(\\n(.1u-\\n(.iu)) .TP
 .el .TP "\\$1"
 ..
-.TH CAMERA 1 "1 Dec 2015" "camera version 20151201"
+.TH CAMERA 1 "1 Jan 2016" "camera version 20160101"
 .SH NAME
 camera \- convex accelerated maximum entropy reconstruction algorithm
 
@@ -133,6 +133,10 @@ The number of parallel reconstructions to execute. The user should ensure
 that enough physical memory exists to hold the requested number of parallel
 reconstructions.
 .TP
+\fB\-accel\fR
+The initial accelerated step factor to be used within a backtracking line
+search. Larger values will result in faster initial convergence.
+.TP
 \fB\-delta\fR
 The background magnitude of the regularization functional, referred to as
 \fIdef\fR in related literature. Larger values result in faster convergence
@@ -159,7 +163,7 @@ provide attribution to the following peer-reviewed article:
 
 \fBBradley Worley\fR,
 Convex Accelerated Maximum Entropy Reconstruction,
-\fIJournal of Magnetic Resonance\fR, 2015, In preparation.
+\fIJournal of Magnetic Resonance\fR, 2016, Under review.
 .fi
 .in
 
@@ -167,7 +171,7 @@ Convex Accelerated Maximum Entropy Reconstruction,
 Bradley Worley <geekysuavo@gmail.com>
 
 .SH COPYRIGHT
-Copyright \(co 2015 Bradley Worley <geekysuavo@gmail.com>
+Copyright \(co 2015\-2016 Bradley Worley <geekysuavo@gmail.com>
 .br
 This is free software. You may redistribute copies of it under the terms of
 version 3.0 of the GNU General Public License
