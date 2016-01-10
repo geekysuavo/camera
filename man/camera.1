@@ -30,7 +30,7 @@
 .ie \\n(.$=0:((0\\$1)*2u>(\\n(.1u-\\n(.iu)) .TP
 .el .TP "\\$1"
 ..
-.TH CAMERA 1 "1 Jan 2016" "camera version 20160101"
+.TH CAMERA 1 "10 Jan 2016" "camera version 20160110"
 .SH NAME
 camera \- convex accelerated maximum entropy reconstruction algorithm
 
@@ -47,7 +47,7 @@ Maximum Entropy Reconstruction Algorithm. As opposed to the Cambridge
 MaxEnt algorithm, which uses a modified conjugate gradient method that
 explicitly computes the gradients of both the spectrum and the data,
 CAMERA uses an accelerated first-order method originally published
-by Yu Nesterov.
+by Yurii Nesterov.
 .PP
 This utility is meant to be used as part of an nmrPipe pipeline, where it
 is placed between the processing steps of the direct dimension and any
@@ -58,7 +58,13 @@ For example, 2D data should be Y(X) traces, 3D data should be YZ(X) planes,
 and 4D data should be YZA(X) cubes.
 .PP
 More detailed information on usage, including example processing and
-reconstruction scripts, is available in the CAMERA GitHub repository.
+reconstruction scripts, is available in the CAMERA GitHub repository:
+.PP
+.in +4n
+.nf
+http://github.com/geekysuavo/camera
+.nf
+.in
 
 .SH OPTIONS
 A short summary of each option supported by \fBcamera\fR is given below.
