@@ -1,5 +1,5 @@
 
-TARGETS= 1 2 3 4 s1 s2 s3 s4 s5 s6 s7
+TARGETS= 1 2 3 4 s1 s2 s3 s4 s5 s6 s7 toc
 
 PNG=$(addsuffix .png,$(addprefix final/figure-,$(TARGETS)))
 TIF=$(addsuffix .tif,$(addprefix final/figure-,$(TARGETS)))
@@ -49,6 +49,9 @@ final/figure-s6.png: split/output.png
 final/figure-s7.png: decoup/output.png
 	cp $^ $@
 
+final/figure-toc.png: toc/output.png
+	cp $^ $@
+
 %.png:
 	$(MAKE) -C $(dir $@)
 
@@ -70,6 +73,7 @@ distclean: clean
 	$(MAKE) -C nonlin clean
 	$(MAKE) -C spec-by-def clean
 	$(MAKE) -C split clean
+	$(MAKE) -C toc clean
 
 again: clean all
 
