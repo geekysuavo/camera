@@ -40,13 +40,13 @@ final/figure-7.png: split/output.png
 final/figure-8.png: decoup/output.png
 	cp $^ $@
 
-final/figure-s1.png: hsqc/output.png
+final/figure-s1.png: nhsqc/output.png
 	cp $^ $@
 
-final/figure-s2.png: hnco/output.png
+final/figure-s2.png: chsqc/output.png
 	cp $^ $@
 
-final/figure-s3.png: conv-by-steps/output.png
+final/figure-s3.png: hnco/output.png
 	cp $^ $@
 
 final/figure-toc.png: toc/output.png
@@ -69,7 +69,8 @@ distclean: clean
 	$(MAKE) -C conv-by-steps clean
 	$(MAKE) -C decoup clean
 	$(MAKE) -C hnco clean
-	$(MAKE) -C hsqc clean
+	$(MAKE) -C chsqc clean
+	$(MAKE) -C nhsqc clean
 	$(MAKE) -C nonlin clean
 	$(MAKE) -C spec-by-def clean
 	$(MAKE) -C split clean
