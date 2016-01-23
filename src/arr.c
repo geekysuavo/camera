@@ -24,7 +24,7 @@
 #include "camera.h"
 
 /* arr_planv: array of globally available fftw plans. the number of
- * plans that will be stored in the array will be equal to the task
+ * plans that will be stored in the array will depend on the task
  * dimensionality.
  */
 fftwf_plan *arr_planv;
@@ -306,8 +306,6 @@ inline void arr_copy3 (arr3 *adest, arr3 *asrc) {
  *  @n3: third-dimension size of the arrays, or zero.
  */
 int arr_plans_init (int n1, int n2, int n3) {
-  /* FIXME: arr_plans_init() */
-
   /* construct plans based on dimensionality. */
   if (n1 > 1 && n2 > 1 && n3 > 1) {
     /* FIXME: construct plans for 3d (i)fft */
@@ -399,18 +397,23 @@ void arr_plans_free (void) {
  *  @sign: sign/direction of the fast Fourier transform.
  */
 void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign) {
-  /* FIXME: implement arr_fftfn1() */
-
+  /* declare required variables:
+   *  @ax, @bx: pointers to raw real coefficient data.
+   */
   hx0 *ax, *bx;
 
+  /* obtain raw coefficient data pointers. */
   ax = (hx0*) asrc->x;
   bx = (hx0*) adest->x;
 
+  /* act based on transform direction. */
   switch (sign) {
+    /* forward: */
     case FFTW_FORWARD:
       fftwf_execute_split_dft(arr_planv[0], ax, ax + 1, bx, bx + 1);
       break;
 
+    /* backward: */
     case FFTW_BACKWARD:
       fftwf_execute_split_dft(arr_planv[1], ax + 1, ax, bx + 1, bx);
       break;
