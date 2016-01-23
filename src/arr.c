@@ -372,18 +372,18 @@ int arr_plans_init (int n1, int n2, int n3) {
       return 0;
 
     /* construct a plan for 1d fft */
-    arr_planv[0] =
-      fftwf_plan_guru_split_dft(1, dims, 0, NULL,
-                                ax, ax + 1,
-                                bx, bx + 1,
-                                FFTW_MEASURE);
+    arr_planv[0] = fftwf_plan_guru_split_dft(
+                     1, dims, 0, NULL,
+                     ax, ax + 1,
+                     bx, bx + 1,
+                     FFTW_MEASURE);
 
     /* construct a plan for 1d fft */
-    arr_planv[1] =
-      fftwf_plan_guru_split_dft(1, dims, 0, NULL,
-                                ax + 1, ax,
-                                bx + 1, bx,
-                                FFTW_MEASURE);
+    arr_planv[1] = fftwf_plan_guru_split_dft(
+                     1, dims, 0, NULL,
+                     ax + 1, ax,
+                     bx + 1, bx,
+                     FFTW_MEASURE);
 
     /* check that the plan was successfully created. */
     if (!arr_planv[0] || !arr_planv[1])
@@ -460,7 +460,27 @@ void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign) {
  *  @sign: sign/direction of the fast Fourier transform.
  */
 void arr_fftfn2 (arr2 *adest, arr2 *asrc, int sign) {
-  /* FIXME: implement arr_fftfn2() */
+  /* declare required variables:
+   *  @ax, @bx: pointers to raw real coefficient data.
+   */
+  hx0 *ax, *bx;
+
+  /* obtain raw coefficient data pointers. */
+  ax = (hx0*) asrc->x;
+  bx = (hx0*) adest->x;
+
+  /* act based on transform direction. */
+  switch (sign) {
+    /* forward: */
+    case FFTW_FORWARD:
+      /* FIXME: implement arr_fft2() */
+      break;
+
+    /* backward: */
+    case FFTW_BACKWARD:
+      /* FIXME: implement arr_ifft2() */
+      break;
+  }
 }
 
 /* arr_fftfn3(): apply a fast Fourier transform to a
@@ -472,6 +492,26 @@ void arr_fftfn2 (arr2 *adest, arr2 *asrc, int sign) {
  *  @sign: sign/direction of the fast Fourier transform.
  */
 void arr_fftfn3 (arr3 *adest, arr3 *asrc, int sign) {
-  /* FIXME: implement arr_fftfn3() */
+  /* declare required variables:
+   *  @ax, @bx: pointers to raw real coefficient data.
+   */
+  hx0 *ax, *bx;
+
+  /* obtain raw coefficient data pointers. */
+  ax = (hx0*) asrc->x;
+  bx = (hx0*) adest->x;
+
+  /* act based on transform direction. */
+  switch (sign) {
+    /* forward: */
+    case FFTW_FORWARD:
+      /* FIXME: implement arr_fft3() */
+      break;
+
+    /* backward: */
+    case FFTW_BACKWARD:
+      /* FIXME: implement arr_ifft3() */
+      break;
+  }
 }
 
