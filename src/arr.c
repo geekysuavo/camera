@@ -306,22 +306,53 @@ inline void arr_copy3 (arr3 *adest, arr3 *asrc) {
  *  @n3: third-dimension size of the arrays, or zero.
  */
 int arr_plans_init (int n1, int n2, int n3) {
+  /* declare variables required at any dimensionality:
+   *  @dims: transform size and stride data structure.
+   *  @vdims: transform loop count data structure.
+   *  @ax, @bx: pointers to raw coefficient data in @a and @b.
+   */
+  fftwf_iodim dims[1], vdims[1];
+  hx0 *ax, *bx;
+
   /* construct plans based on dimensionality. */
   if (n1 > 1 && n2 > 1 && n3 > 1) {
+    /* allocate two temporary arrays. */
+    arr3 *a = arr_alloc3(n1, n2, n3);
+    arr3 *b = arr_alloc3(n1, n2, n3);
+    if (!a || !b)
+      return 0;
+
+    /* set up the array data pointers. */
+    ax = (hx0*) a->x;
+    bx = (hx0*) b->x;
+
     /* FIXME: construct plans for 3d (i)fft */
+
+    /* free the temporary arrays. */
+    arr_free3(a);
+    arr_free3(b);
   }
   else if (n1 > 1 && n2 > 1) {
+    /* allocate two temporary arrays. */
+    arr2 *a = arr_alloc2(n1, n2, n3);
+    arr2 *b = arr_alloc2(n1, n2, n3);
+    if (!a || !b)
+      return 0;
+
+    /* set up the array data pointers. */
+    ax = (hx0*) a->x;
+    bx = (hx0*) b->x;
+
     /* FIXME: construct plans for 2d (i)fft */
+
+    /* free the temporary arrays. */
+    arr_free2(a);
+    arr_free2(b);
   }
   else if (n1 > 1) {
-    /* declare required variables for 1d fft/ifft. */
-    fftwf_iodim dims[1];
-    hx0 *ax, *bx;
-    arr1 *a, *b;
-
     /* allocate two temporary arrays. */
-    a = arr_alloc1(n1, n2, n3);
-    b = arr_alloc1(n1, n2, n3);
+    arr1 *a = arr_alloc1(n1, n2, n3);
+    arr1 *b = arr_alloc1(n1, n2, n3);
     if (!a || !b)
       return 0;
 
