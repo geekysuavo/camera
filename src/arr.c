@@ -23,6 +23,12 @@
 /* include the core camera header. */
 #include "camera.h"
 
+/* arr_plans: array of globally available fftw plans. the number of
+ * plans that will be stored in the array will be equal to the task
+ * dimensionality.
+ */
+fftwf_plan *arr_plans = NULL;
+
 /* arr_alloc1(): allocate a new one-dimensional hypercomplex array.
  *
  * arguments:

@@ -30,7 +30,7 @@
 .ie \\n(.$=0:((0\\$1)*2u>(\\n(.1u-\\n(.iu)) .TP
 .el .TP "\\$1"
 ..
-.TH CAMERA 1 "10 Jan 2016" "camera version 20160110"
+.TH CAMERA 1 "01 Feb 2016" "camera version 20160201"
 .SH NAME
 camera \- convex accelerated maximum entropy reconstruction algorithm
 
@@ -96,8 +96,8 @@ the schedule file.
 .TP
 \fB\-xN\fR
 The number of complex points along the \fIx\fR-dimension of the dataset.
-By default, \fBxN\fR is set to the smallest power-of-two size that is
-not less than the largest \fIx\fR-index in the schedule file.
+By default, \fBxN\fR is set to one more than the largest \fIx\fR-index
+in the schedule file.
 .TP
 \fB\-yN\fR
 The number of complex points along the \fIy\fR-dimension of the dataset.
@@ -135,9 +135,9 @@ the \fIz\fR-dimension of the dataset.
 The number of reconstruction iterations to execute.
 .TP
 \fB\-threads\fR
-The number of parallel reconstructions to execute. The user should ensure
-that enough physical memory exists to hold the requested number of parallel
-reconstructions.
+The number of parallel reconstructions to execute. \fBcamera\fR will attempt
+to verify that enough physical memory exists to hold the requested number
+of parallel reconstructions.
 .TP
 \fB\-accel\fR
 The initial accelerated step factor to be used within a backtracking line
