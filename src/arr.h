@@ -24,9 +24,6 @@
 #ifndef __CAMERA_ARR_H__
 #define __CAMERA_ARR_H__
 
-/* include the c library memory allocation header. */
-#include <malloc.h>
-
 /* arr1: data structure for one-dimensional hypercomplex arrays.
  */
 typedef struct {
@@ -35,9 +32,6 @@ typedef struct {
 
   /* @n: total array size. */
   int n;
-
-  /* @l: total array size, log2. */
-  int l;
 }
 arr1;
 
@@ -52,12 +46,6 @@ typedef struct {
    * @n2: second-dimension array size
    */
   int n, n1, n2;
-
-  /* @l: total array size, log2.
-   * @l1: first-dimension array size, log2.
-   * @l2: second-dimension array size, log2.
-   */
-  int l, l1, l2;
 }
 arr2;
 
@@ -73,13 +61,6 @@ typedef struct {
    * @n3: third-dimension array size.
    */
   int n, n1, n2, n3;
-
-  /* @l: total array size, log2.
-   * @l1: first-dimension array size, log2.
-   * @l2: second-dimension array size, log2.
-   * @l3: third-dimension array size, log2.
-   */
-  int l, l1, l2, l3;
 }
 arr3;
 
@@ -108,6 +89,18 @@ void arr_copy1 (arr1 *adest, arr1 *asrc);
 void arr_copy2 (arr2 *adest, arr2 *asrc);
 
 void arr_copy3 (arr3 *adest, arr3 *asrc);
+
+void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign);
+#define arr_fft1(x,y)  arr_fftfn1(x, y, FFTW_FORWARD)
+#define arr_ifft1(x,y) arr_fftfn1(x, y, FFTW_BACKWARD)
+
+void arr_fftfn2 (arr2 *adest, arr2 *asrc, int sign);
+#define arr_fft2(x,y)  arr_fftfn2(x, y, FFTW_FORWARD)
+#define arr_ifft2(x,y) arr_fftfn2(x, y, FFTW_BACKWARD)
+
+void arr_fftfn3 (arr3 *adest, arr3 *asrc, int sign);
+#define arr_fft3(x,y)  arr_fftfn3(x, y, FFTW_FORWARD)
+#define arr_ifft3(x,y) arr_fftfn3(x, y, FFTW_BACKWARD)
 
 #endif /* !__CAMERA_ARR_H__ */
 

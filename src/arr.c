@@ -23,51 +23,10 @@
 /* include the core camera header. */
 #include "camera.h"
 
-/* arr_binary_logn(): compute the base-two logarithm of an integer.
- *
- * arguments:
- *  @n: input value for the computation.
- *
- * returns:
- *  if the input value is a power of two, then its base-two logarithm
- *  is returned. otherwise, a negative value will be returned.
- */
-int arr_binary_logn (int n) {
-  /* declare required variables:
-   *  @nnear: nearest power-of-two value to the input value.
-   *  @blogn: current base-two logarithm of the bit counter.
-   *  @k: bit counter. always a power of two.
-   */
-  int nnear, blogn, k;
-
-  /* initialize the bit counter and log value. */
-  blogn = 0;
-  k = 1;
-
-  /* loop until the counter is no longer less than the input value. */
-  while (k < n) {
-    /* left-shift the counter and increment the log value. */
-    k <<= 1;
-    blogn++;
-  }
-
-  /* compute the nearest power of two to the input value. */
-  nnear = (1 << blogn);
-
-  /* the input and nearest values will be equal only if the
-   * input value is a power of two.
-   */
-  if (n != nnear)
-    return -1;
-
-  /* the input value was a power of two. return its logarithm. */
-  return blogn;
-}
-
 /* arr_alloc1(): allocate a new one-dimensional hypercomplex array.
  *
  * arguments:
- *  @n1: size of the array. must be a power of two.
+ *  @n1: size of the array.
  *  @n2: unused.
  *  @n3: unused.
  *
@@ -78,18 +37,13 @@ int arr_binary_logn (int n) {
 arr1 *arr_alloc1 (int n1, int n2, int n3) {
   /* declare required variables:
    *  @a: pointer to the newly allocated structure.
-   *  @l: base-two logarithm of the array size.
    */
   arr1 *a;
-  int l;
 
-  /* compute the base-two logarithm of the array size. */
-  l = arr_binary_logn(n1);
-
-  /* check that the array size is a power of two. */
-  if (l < 0) {
+  /* check that the array size is valid. */
+  if (n1 < 1) {
     /* if not, output an error message and return null. */
-    failf("size '%d' not a power of two", n1);
+    failf("size '%d' is invalid", n1);
     return NULL;
   }
 
@@ -98,14 +52,16 @@ arr1 *arr_alloc1 (int n1, int n2, int n3) {
   if (!a)
     return NULL;
 
-  /* store the array sizes in the structure. */
+  /* store the array size in the structure. */
   a->n = n1;
-  a->l = l;
 
   /* allocate a new array of coefficients. */
-  a->x = (hx1*) calloc(a->n, sizeof(hx1));
+  a->x = (hx1*) fftwf_malloc(sizeof(hx1) * a->n);
   if (!a->x)
     return NULL;
+
+  /* zero the contents of the array. */
+  arr_zero1(a);
 
   /* return the newly allocated structure pointer. */
   return a;
@@ -114,8 +70,8 @@ arr1 *arr_alloc1 (int n1, int n2, int n3) {
 /* arr_alloc2(): allocate a new two-dimensional hypercomplex array.
  *
  * arguments:
- *  @n1: first-dimension size of the array. must be a power of two.
- *  @n2: second-dimension size of the array. must be a power of two.
+ *  @n1: first-dimension size of the array.
+ *  @n2: second-dimension size of the array.
  *  @n3: unused.
  *
  * returns:
@@ -124,21 +80,14 @@ arr1 *arr_alloc1 (int n1, int n2, int n3) {
  */
 arr2 *arr_alloc2 (int n1, int n2, int n3) {
   /* declare required variables:
-   *  @l1: base-two logarithm of the array first-dimension size.
-   *  @l2: base-two logarithm of the array second-dimension size.
    *  @a: pointer to the newly allocated structure.
    */
-  int l1, l2;
   arr2 *a;
 
-  /* compute the base-two logarithms of each array size. */
-  l1 = arr_binary_logn(n1);
-  l2 = arr_binary_logn(n2);
-
-  /* check that all array sizes are powers of two. */
-  if (l1 < 0 || l2 < 0) {
+  /* check that all array sizes are valid. */
+  if (n1 < 1 || n2 < 1) {
     /* if not, output an error message and return null. */
-    failf("size '%dx%d' not a power of two", n1, n2);
+    failf("size '%dx%d' is invalid", n1, n2);
     return NULL;
   }
 
@@ -147,22 +96,20 @@ arr2 *arr_alloc2 (int n1, int n2, int n3) {
   if (!a)
     return NULL;
 
-  /* store the array first-dimension size in the structure. */
+  /* store the array sizes in the structure. */
   a->n1 = n1;
-  a->l1 = l1;
-
-  /* store the array second-dimension size in the structure. */
   a->n2 = n2;
-  a->l2 = l2;
 
   /* compute the total size of the array. */
   a->n = n1 * n2;
-  a->l = a->l1 + a->l2;
 
   /* allocate a new array of coefficients. */
-  a->x = (hx2*) calloc(a->n, sizeof(hx2));
+  a->x = (hx2*) fftwf_malloc(sizeof(hx2) * a->n);
   if (!a->x)
     return NULL;
+
+  /* zero the contents of the array. */
+  arr_zero2(a);
 
   /* return the newly allocated structure pointer. */
   return a;
@@ -171,9 +118,9 @@ arr2 *arr_alloc2 (int n1, int n2, int n3) {
 /* arr_alloc3(): allocate a new three-dimensional hypercomplex array.
  *
  * arguments:
- *  @n1: first-dimension size of the array. must be a power of two.
- *  @n2: second-dimension size of the array. must be a power of two.
- *  @n3: third-dimension size of the array. must be a power of two.
+ *  @n1: first-dimension size of the array.
+ *  @n2: second-dimension size of the array.
+ *  @n3: third-dimension size of the array.
  *
  * returns:
  *  pointer to a newly allocated three-dimensional hypercomplex
@@ -181,23 +128,14 @@ arr2 *arr_alloc2 (int n1, int n2, int n3) {
  */
 arr3 *arr_alloc3 (int n1, int n2, int n3) {
   /* declare required variables:
-   *  @l1: base-two logarithm of the array first-dimension size.
-   *  @l2: base-two logarithm of the array second-dimension size.
-   *  @l3: base-two logarithm of the array third-dimension size.
    *  @a: pointer to the newly allocated structure.
    */
-  int l1, l2, l3;
   arr3 *a;
 
-  /* compute the base-two logarithms of each array size. */
-  l1 = arr_binary_logn(n1);
-  l2 = arr_binary_logn(n2);
-  l3 = arr_binary_logn(n3);
-
-  /* check that all array sizes are powers of two. */
-  if (l1 < 0 || l2 < 0 || l3 < 0) {
+  /* check that all array sizes are valid. */
+  if (n1 < 1 || n2 < 1 || n3 < 1) {
     /* if not, output an error message and return null. */
-    failf("size '%dx%dx%d' not a power of two", n1, n2, n3);
+    failf("size '%dx%dx%d' is invalid", n1, n2, n3);
     return NULL;
   }
 
@@ -206,24 +144,16 @@ arr3 *arr_alloc3 (int n1, int n2, int n3) {
   if (!a)
     return NULL;
 
-  /* store the array first-dimension size in the structure. */
+  /* store the array sizes in the structure. */
   a->n1 = n1;
-  a->l1 = l1;
-
-  /* store the array second-dimension size in the structure. */
   a->n2 = n2;
-  a->l2 = l2;
-
-  /* store the array third-dimension size in the structure. */
   a->n3 = n3;
-  a->l3 = l3;
 
   /* compute the total size of the array. */
   a->n = n1 * n2 * n3;
-  a->l = a->l1 + a->l2 + a->l3;
 
   /* allocate a new array of coefficients. */
-  a->x = (hx3*) memalign(sizeof(hx3), a->n * sizeof(hx3));
+  a->x = (hx3*) fftwf_malloc(sizeof(hx3) * a->n);
   if (!a->x)
     return NULL;
 
@@ -358,5 +288,41 @@ inline void arr_copy2 (arr2 *adest, arr2 *asrc) {
 inline void arr_copy3 (arr3 *adest, arr3 *asrc) {
   /* copy all array coefficients from the source to the destination. */
   memcpy(adest->x, asrc->x, asrc->n * sizeof(hx3));
+}
+
+/* arr_fftfn1(): apply a fast Fourier transform to a
+ * one-dimensional hypercomplex array.
+ *
+ * arguments:
+ *  @adest: pointer to the hypercomplex destination data structure.
+ *  @asrc: pointer to the hypercomplex source data structure.
+ *  @sign: sign/direction of the fast Fourier transform.
+ */
+void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign) {
+  /* FIXME: implement arr_fftfn1() */
+}
+
+/* arr_fftfn2(): apply a fast Fourier transform to a
+ * two-dimensional hypercomplex array.
+ *
+ * arguments:
+ *  @adest: pointer to the hypercomplex destination data structure.
+ *  @asrc: pointer to the hypercomplex source data structure.
+ *  @sign: sign/direction of the fast Fourier transform.
+ */
+void arr_fftfn2 (arr2 *adest, arr2 *asrc, int sign) {
+  /* FIXME: implement arr_fftfn2() */
+}
+
+/* arr_fftfn3(): apply a fast Fourier transform to a
+ * three-dimensional hypercomplex array.
+ *
+ * arguments:
+ *  @adest: pointer to the hypercomplex destination data structure.
+ *  @asrc: pointer to the hypercomplex source data structure.
+ *  @sign: sign/direction of the fast Fourier transform.
+ */
+void arr_fftfn3 (arr3 *adest, arr3 *asrc, int sign) {
+  /* FIXME: implement arr_fftfn3() */
 }
 

@@ -26,7 +26,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+/* include standard c math headers. */
+#include <complex.h>
 #include <math.h>
+
+/* include the fftw3 library header. */
+#include <fftw3.h>
 
 /* include the openmp library header. */
 #include <omp.h>
@@ -39,7 +45,6 @@
 /* include all compiled object headers. */
 #include "hx.h"
 #include "arr.h"
-#include "fft.h"
 #include "sched.h"
 #include "nmrpipe.h"
 #include "task.h"

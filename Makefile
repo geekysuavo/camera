@@ -7,7 +7,7 @@ CFLAGS=-s -static -O3 -ffast-math -fopenmp -std=c99 -Wall -Wformat
 CFLAGS+= -msse -msse2 -msse3
 
 # LIBS: library linkage flags.
-LIBS=-lm
+LIBS=-lfftw3f -lm
 
 # USE_AVX: set to 'y' or 'n' to enable or disable AVX extensions.
 USE_AVX=n
@@ -32,7 +32,7 @@ BIN=bin/camera
 MAN=man/camera.1
 
 # SRC, OBJ: basenames and filenames of output object files.
-SRC=hx arr fft1 fft2 fft3 nmrpipe task sched util camera
+SRC=hx arr nmrpipe task sched util camera
 OBJ=$(addsuffix .o,$(addprefix src/,$(SRC)))
 
 # SUFFIXES: registered filename suffixes for implicit make rules.

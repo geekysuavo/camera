@@ -194,10 +194,10 @@ sched *sched_alloc (const char *fname) {
     }
   }
 
-  /* transform the maximum grid indices into powers of two. */
-  sch->n1 = nextpow2(sch->n1);
-  sch->n2 = nextpow2(sch->n2);
-  sch->n3 = nextpow2(sch->n3);
+  /* transform the maximum grid indices into sizes. */
+  if (sch->d >= 1) sch->n1++;
+  if (sch->d >= 2) sch->n2++;
+  if (sch->d >= 3) sch->n3++;
 
   /* close the input file handle. */
   fclose(fh);

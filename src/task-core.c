@@ -32,13 +32,13 @@
  *  @ARR_FREE: name of the array deallocation function.
  *  @ARR_COPY: name of the array copy function.
  *  @ARR_ZERO: name of the array zero function.
+ *  @ARR_FFT: name of the forward Fourier transform function.
+ *  @ARR_IFFT: name of the backward Fourier transform function.
  *  @HX_SUMSQ: name of the scalar squared norm function.
  *  @HX_FUNC: name of the scalar objective function.
  *  @HX_GRAD: name of the scalar gradient function.
  *  @PIPESRC_READ: name of the pipe source reading function.
  *  @PIPESINK_WRITE: name of the pipe sink writing function.
- *  @FFT: name of the forward Fourier transform function.
- *  @IFFT: name of the backward Fourier transform function.
  */
 #define TASK_CORE(dims)       CONCAT(task_core, dims)
 #define TASK_RUN(dims)        CONCAT(task_run, dims)
@@ -47,13 +47,13 @@
 #define ARR_FREE(dims)        CONCAT(arr_free, dims)
 #define ARR_COPY(dims)        CONCAT(arr_copy, dims)
 #define ARR_ZERO(dims)        CONCAT(arr_zero, dims)
+#define ARR_FFT(dims)         CONCAT(arr_fft, dims)
+#define ARR_IFFT(dims)        CONCAT(arr_ifft, dims)
 #define HX_SUMSQ(dims)        CONCAT(hx_sumsq, dims)
 #define HX_FUNC(dims)         CONCAT(hx_func, dims)
 #define HX_GRAD(dims)         CONCAT(hx_grad, dims)
 #define PIPESRC_READ(dims)    CONCAT(pipesrc_read, dims)
 #define PIPESINK_WRITE(dims)  CONCAT(pipesink_write, dims)
-#define FFT(dims)             CONCAT(fft, dims)
-#define IFFT(dims)            CONCAT(ifft, dims)
 
 /* task_core[123](): reconstruct an n-dimensional hypercomplex array,
  * given a complete set of pre-prepared data structures.
@@ -111,8 +111,7 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
   ARR_COPY(D)(y, b);
 
   /* initialize the frequency-domain array. */
-  ARR_COPY(D)(X, b);
-  FFT(D)(X);
+  ARR_FFT(D)(X, b);
 
   /* initialize the schedule index and weight variables. */
   K = sch->idx;
@@ -131,15 +130,12 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
     /* compute the velocity factor for the current iteration. */
     beta = ((hx0) (iter - 1)) / ((hx0) (iter + 2));
 
-    /* copy the current spectrum into the gradient array. */
-    ARR_COPY(D)(g, X);
-
     /* compute the frequency-domain gradient. */
     for (i = 0; i < N; i++)
-      g->x[i] = HX_GRAD(D)(g->x[i], Lf);
+      X->x[i] = HX_GRAD(D)(X->x[i], Lf);
 
     /* compute the time-domain gradient. */
-    IFFT(D)(g);
+    ARR_IFFT(D)(g, X);
 
     /* loop until an acceptable step has been made. */
     do {
@@ -178,8 +174,7 @@ void TASK_CORE(D) (ARR(D) *b, ARR(D) *x, ARR(D) *y,
         z->x[i] = kf * z->x[i] - beta * y->x[i];
 
       /* compute the new frequency-domain estimate. */
-      ARR_COPY(D)(X, z);
-      FFT(D)(X);
+      ARR_FFT(D)(X, z);
 
       /* compute the new objective value. */
       for (i = 0, fnew = 0.0f; i < N; i++)
@@ -351,11 +346,11 @@ int TASK_RUN(D) (task *T) {
 #undef ARR_FREE
 #undef ARR_COPY
 #undef ARR_ZERO
+#undef ARR_FFT
+#undef ARR_IFFT
 #undef HX_SUMSQ
 #undef HX_FUNC
 #undef HX_GRAD
 #undef PIPESRC_READ
 #undef PIPESINK_WRITE
-#undef FFT
-#undef IFFT
 

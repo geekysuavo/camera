@@ -443,9 +443,9 @@ int task_run (task *T) {
 
   /* update the schedule dimensionality and sizes for packing. */
   T->sch->d = T->dims;
-  T->sch->n1 = T->nx << 1;
-  T->sch->n2 = T->ny << 1;
-  T->sch->n3 = T->nz << 1;
+  T->sch->n1 = 2 * T->nx;
+  T->sch->n2 = 2 * T->ny;
+  T->sch->n3 = 2 * T->nz;
 
   /* pack the schedule array values into linear indices. */
   if (!sched_pack(T->sch)) {
@@ -492,7 +492,7 @@ int task_run (task *T) {
     /* two-dimensional data. */
     case 2:
       T->Pin->hdr.sz = T->nx;
-      T->Pin->hdr.specnum = T->ny << 1;
+      T->Pin->hdr.specnum = 2 * T->ny;
       T->Pin->hdr.apod_f1 = T->nx;
       T->Pin->hdr.apod_f3 = T->ny;
       T->Pin->hdr.quad = PIPE_QUAD_COMPLEX;
@@ -503,11 +503,11 @@ int task_run (task *T) {
     /* three-dimensional data. */
     case 3:
       T->Pin->hdr.sz = T->nx;
-      T->Pin->hdr.specnum = T->ny << 1;
+      T->Pin->hdr.specnum = 2 * T->ny;
       T->Pin->hdr.apod_f1 = T->nx;
       T->Pin->hdr.apod_f3 = T->ny;
       T->Pin->hdr.apod_f4 = T->nz;
-      T->Pin->hdr.size_f3 = T->nz << 1;
+      T->Pin->hdr.size_f3 = 2 * T->nz;
       T->Pin->hdr.quad = PIPE_QUAD_COMPLEX;
       T->Pin->hdr.quad_f1 = PIPE_QUAD_COMPLEX;
       T->Pin->hdr.quad_f3 = PIPE_QUAD_COMPLEX;

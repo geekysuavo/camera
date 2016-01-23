@@ -24,9 +24,6 @@
 #ifndef __CAMERA_HX_H__
 #define __CAMERA_HX_H__
 
-/* include the standard c99 complex math header. */
-#include <complex.h>
-
 /* hx0: defined type for H0 (real) scalars (one coefficient).
  */
 typedef float hx0;

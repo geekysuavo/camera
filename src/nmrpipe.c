@@ -274,7 +274,7 @@ int pipesrc_read2 (nmrpipe *P, arr2 *x) {
   /* loop over all schedule indices. */
   for (i = 0; i < P->sch->n; i++) {
     /* store the four coefficients into the output array. */
-    x->x[P->sch->idx[i]][0] = buf[4 * i + 0];
+    x->x[P->sch->idx[i]][0] = buf[4 * i];
     x->x[P->sch->idx[i]][1] = buf[4 * i + 1];
     x->x[P->sch->idx[i]][2] = buf[4 * i + 2];
     x->x[P->sch->idx[i]][3] = buf[4 * i + 3];
@@ -326,7 +326,7 @@ int pipesrc_read3 (nmrpipe *P, arr3 *x) {
   /* loop over all schedule indices. */
   for (i = 0; i < P->sch->n; i++) {
     /* store the eight coefficients into the output array. */
-    x->x[P->sch->idx[i]][0] = buf[8 * i + 0];
+    x->x[P->sch->idx[i]][0] = buf[8 * i];
     x->x[P->sch->idx[i]][1] = buf[8 * i + 1];
     x->x[P->sch->idx[i]][2] = buf[8 * i + 2];
     x->x[P->sch->idx[i]][3] = buf[8 * i + 3];
@@ -362,7 +362,7 @@ int pipesink_write1 (nmrpipe *P, arr1 *x) {
   float *buf;
 
   /* compute the relevant sizes for writing. */
-  h = x->n >> 1;
+  h = x->n / 2;
   n_buf = 2 * h;
 
   /* attempt to allocate a buffer to hold data for writing. */
@@ -407,8 +407,8 @@ int pipesink_write2 (nmrpipe *P, arr2 *x) {
   float *buf;
 
   /* compute the relevant sizes for writing. */
-  h1 = x->n1 >> 1;
-  h2 = x->n2 >> 1;
+  h1 = x->n1 / 2;
+  h2 = x->n2 / 2;
   n_buf = 4 * h1 * h2;
 
   /* attempt to allocate a buffer to hold data for writing. */
@@ -465,9 +465,9 @@ int pipesink_write3 (nmrpipe *P, arr3 *x) {
   float *buf;
 
   /* compute the relevant sizes for writing. */
-  h1 = x->n1 >> 1;
-  h2 = x->n2 >> 1;
-  h3 = x->n3 >> 1;
+  h1 = x->n1 / 2;
+  h2 = x->n2 / 2;
+  h3 = x->n3 / 2;
   n_buf = 8 * h1 * h2 * h3;
 
   /* attempt to allocate a buffer to hold data for writing. */
