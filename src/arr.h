@@ -90,6 +90,10 @@ void arr_copy2 (arr2 *adest, arr2 *asrc);
 
 void arr_copy3 (arr3 *adest, arr3 *asrc);
 
+int arr_plans_init (int n1, int n2, int n3);
+
+void arr_plans_free (void);
+
 void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign);
 #define arr_fft1(x,y)  arr_fftfn1(x, y, FFTW_FORWARD)
 #define arr_ifft1(x,y) arr_fftfn1(x, y, FFTW_BACKWARD)

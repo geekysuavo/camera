@@ -227,6 +227,9 @@ void task_free (task *T) {
   if (T->sch)
     sched_free(T->sch);
 
+  /* free the global array of fftw plans. */
+  arr_plans_free();
+
   /* free the structure pointer. */
   free(T);
 }
@@ -459,6 +462,13 @@ int task_run (task *T) {
    */
   if (!task_memcheck(T))
     return 0;
+
+  /* prepare the global array of fftw plans. */
+  if (!arr_plans_init(T->sch->n1, T->sch->n2, T->sch->n3)) {
+    /* if unsuccessful, output an error message and return failure. */
+    failf("failed to initialize fftw plans");
+    return 0;
+  }
 
   /* check if a log filename was provided. */
   if (T->fname_log) {

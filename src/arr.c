@@ -23,11 +23,12 @@
 /* include the core camera header. */
 #include "camera.h"
 
-/* arr_plans: array of globally available fftw plans. the number of
+/* arr_planv: array of globally available fftw plans. the number of
  * plans that will be stored in the array will be equal to the task
  * dimensionality.
  */
-fftwf_plan *arr_plans = NULL;
+fftwf_plan *arr_planv;
+unsigned int arr_planc;
 
 /* arr_alloc1(): allocate a new one-dimensional hypercomplex array.
  *
@@ -296,6 +297,99 @@ inline void arr_copy3 (arr3 *adest, arr3 *asrc) {
   memcpy(adest->x, asrc->x, asrc->n * sizeof(hx3));
 }
 
+/* arr_plans_init(): initialize the global fftw plan array for use on
+ * {one,two,three}-dimensional hypercomplex arrays.
+ *
+ * arguments:
+ *  @n1: first-dimension size of the arrays.
+ *  @n2: second-dimension size of the arrays, or zero.
+ *  @n3: third-dimension size of the arrays, or zero.
+ */
+int arr_plans_init (int n1, int n2, int n3) {
+  /* FIXME: arr_plans_init() */
+
+  /* construct plans based on dimensionality. */
+  if (n1 > 1 && n2 > 1 && n3 > 1) {
+    /* FIXME: construct plans for 3d (i)fft */
+  }
+  else if (n1 > 1 && n2 > 1) {
+    /* FIXME: construct plans for 2d (i)fft */
+  }
+  else if (n1 > 1) {
+    /* declare required variables for 1d fft/ifft. */
+    fftwf_iodim dims[1];
+    hx0 *ax, *bx;
+    arr1 *a, *b;
+
+    /* allocate two temporary arrays. */
+    a = arr_alloc1(n1, n2, n3);
+    b = arr_alloc1(n1, n2, n3);
+    if (!a || !b)
+      return 0;
+
+    /* set up the array data pointers. */
+    ax = (hx0*) a->x;
+    bx = (hx0*) b->x;
+
+    /* initialize the transform size. */
+    dims[0].n = n1;
+    dims[0].is = 2;
+    dims[0].os = 2;
+
+    /* allocate the plan array. */
+    arr_planc = 2;
+    arr_planv = (fftwf_plan*) malloc(sizeof(fftwf_plan) * arr_planc);
+    if (!arr_planv)
+      return 0;
+
+    /* construct a plan for 1d fft */
+    arr_planv[0] =
+      fftwf_plan_guru_split_dft(1, dims, 0, NULL,
+                                ax, ax + 1,
+                                bx, bx + 1,
+                                FFTW_MEASURE);
+
+    /* construct a plan for 1d fft */
+    arr_planv[1] =
+      fftwf_plan_guru_split_dft(1, dims, 0, NULL,
+                                ax + 1, ax,
+                                bx + 1, bx,
+                                FFTW_MEASURE);
+
+    /* check that the plan was successfully created. */
+    if (!arr_planv[0] || !arr_planv[1])
+      return 0;
+
+    /* free the temporary arrays. */
+    arr_free1(a);
+    arr_free1(b);
+  }
+  else {
+    /* invalid dimensionality. */
+    return 0;
+  }
+
+  /* return success. */
+  return 1;
+}
+
+/* arr_plans_free(): deallocate the global fftw plan array.
+ */
+void arr_plans_free (void) {
+  /* declare required variables:
+   *  @i: plan array index.
+   */
+  int i;
+
+  /* loop over the plans in the plan array. */
+  for (i = 0; i < arr_planc; i++)
+    fftwf_destroy_plan(arr_planv[i]);
+
+  /* free the plan array pointer. */
+  free(arr_planv);
+  arr_planc = 0;
+}
+
 /* arr_fftfn1(): apply a fast Fourier transform to a
  * one-dimensional hypercomplex array.
  *
@@ -306,6 +400,21 @@ inline void arr_copy3 (arr3 *adest, arr3 *asrc) {
  */
 void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign) {
   /* FIXME: implement arr_fftfn1() */
+
+  hx0 *ax, *bx;
+
+  ax = (hx0*) asrc->x;
+  bx = (hx0*) adest->x;
+
+  switch (sign) {
+    case FFTW_FORWARD:
+      fftwf_execute_split_dft(arr_planv[0], ax, ax + 1, bx, bx + 1);
+      break;
+
+    case FFTW_BACKWARD:
+      fftwf_execute_split_dft(arr_planv[1], ax + 1, ax, bx + 1, bx);
+      break;
+  }
 }
 
 /* arr_fftfn2(): apply a fast Fourier transform to a
