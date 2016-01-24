@@ -386,14 +386,14 @@ int arr_plans_init (int n1, int n2, int n3) {
     /* construct a plan for dim=2 (a,c) fft. */
     planv[2] = fftwf_plan_guru_split_dft(
                  1, dims + 1, 1, vdims + 1,
-                 ax + 0, ax + 2,
+                 bx + 0, bx + 2,
                  bx + 0, bx + 2,
                  FFTW_MEASURE);
 
     /* construct a plan for dim=2 (b,d) fft. */
     planv[3] = fftwf_plan_guru_split_dft(
                  1, dims + 1, 1, vdims + 1,
-                 ax + 1, ax + 3,
+                 bx + 1, bx + 3,
                  bx + 1, bx + 3,
                  FFTW_MEASURE);
 
@@ -414,14 +414,14 @@ int arr_plans_init (int n1, int n2, int n3) {
     /* construct a plan for dim=2 (a,c) ifft. */
     planv[6] = fftwf_plan_guru_split_dft(
                  1, dims + 1, 1, vdims + 1,
-                 ax + 2, ax + 0,
+                 bx + 2, bx + 0,
                  bx + 2, bx + 0,
                  FFTW_MEASURE);
 
     /* construct a plan for dim=2 (b,d) ifft. */
     planv[7] = fftwf_plan_guru_split_dft(
                  1, dims + 1, 1, vdims + 1,
-                 ax + 3, ax + 1,
+                 bx + 3, bx + 1,
                  bx + 3, bx + 1,
                  FFTW_MEASURE);
 
@@ -560,16 +560,16 @@ void arr_fftfn2 (arr2 *adest, arr2 *asrc, int sign) {
     case FFTW_FORWARD:
       fftwf_execute_split_dft(planv[0], ax + 0, ax + 1, bx + 0, bx + 1);
       fftwf_execute_split_dft(planv[1], ax + 2, ax + 3, bx + 2, bx + 3);
-      fftwf_execute_split_dft(planv[2], ax + 0, ax + 2, bx + 0, bx + 2);
-      fftwf_execute_split_dft(planv[3], ax + 1, ax + 3, bx + 1, bx + 3);
+      fftwf_execute_split_dft(planv[2], bx + 0, bx + 2, bx + 0, bx + 2);
+      fftwf_execute_split_dft(planv[3], bx + 1, bx + 3, bx + 1, bx + 3);
       break;
 
     /* backward: */
     case FFTW_BACKWARD:
       fftwf_execute_split_dft(planv[4], ax + 1, ax + 0, bx + 1, bx + 0);
       fftwf_execute_split_dft(planv[5], ax + 3, ax + 2, bx + 3, bx + 2);
-      fftwf_execute_split_dft(planv[6], ax + 2, ax + 0, bx + 2, bx + 0);
-      fftwf_execute_split_dft(planv[7], ax + 3, ax + 1, bx + 3, bx + 1);
+      fftwf_execute_split_dft(planv[6], bx + 2, bx + 0, bx + 2, bx + 0);
+      fftwf_execute_split_dft(planv[7], bx + 3, bx + 1, bx + 3, bx + 1);
       break;
   }
 }
