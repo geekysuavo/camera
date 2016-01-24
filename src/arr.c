@@ -23,12 +23,12 @@
 /* include the core camera header. */
 #include "camera.h"
 
-/* arr_planv: array of globally available fftw plans. the number of
+/* planv: array of globally available fftw plans. the number of
  * plans that will be stored in the array will depend on the task
  * dimensionality.
  */
-fftwf_plan *arr_planv;
-unsigned int arr_planc;
+fftwf_plan *planv;
+unsigned int planc;
 
 /* arr_alloc1(): allocate a new one-dimensional hypercomplex array.
  *
@@ -308,10 +308,10 @@ inline void arr_copy3 (arr3 *adest, arr3 *asrc) {
 int arr_plans_init (int n1, int n2, int n3) {
   /* declare variables required at any dimensionality:
    *  @dims: transform size and stride data structure.
-   *  @vdims: transform loop count data structure.
+   *  @vdims: vector size and stride data structure.
    *  @ax, @bx: pointers to raw coefficient data in @a and @b.
    */
-  fftwf_iodim dims[1], vdims[1];
+  fftwf_iodim dims[2], vdims[2];
   hx0 *ax, *bx;
 
   /* construct plans based on dimensionality. */
@@ -343,7 +343,92 @@ int arr_plans_init (int n1, int n2, int n3) {
     ax = (hx0*) a->x;
     bx = (hx0*) b->x;
 
-    /* FIXME: construct plans for 2d (i)fft */
+    /* initialize the first-dimension transform size. */
+    dims[0].n = n1;
+    dims[0].is = 4;
+    dims[0].os = 4;
+
+    /* initialize the second-dimension transform size. */
+    dims[1].n = n2;
+    dims[1].is = 4 * n1;
+    dims[1].os = 4 * n1;
+
+    /* initialize the first-dimension vector size. */
+    vdims[0].n = n2;
+    vdims[0].is = 4 * n1;
+    vdims[0].os = 4 * n1;
+
+    /* initialize the second-dimension vector size. */
+    vdims[1].n = n1;
+    vdims[1].is = 4;
+    vdims[1].os = 4;
+
+    /* allocate the plan array. */
+    planc = 8;
+    planv = (fftwf_plan*) malloc(sizeof(fftwf_plan) * planc);
+    if (!planv)
+      return 0;
+
+    /* construct a plan for dim=1 (a,b) fft. */
+    planv[0] = fftwf_plan_guru_split_dft(
+                 1, dims, 1, vdims,
+                 ax + 0, ax + 1,
+                 bx + 0, bx + 1,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=1 (c,d) fft. */
+    planv[1] = fftwf_plan_guru_split_dft(
+                 1, dims, 1, vdims,
+                 ax + 2, ax + 3,
+                 bx + 2, bx + 3,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (a,c) fft. */
+    planv[2] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 1, vdims + 1,
+                 ax + 0, ax + 2,
+                 bx + 0, bx + 2,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (b,d) fft. */
+    planv[3] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 1, vdims + 1,
+                 ax + 1, ax + 3,
+                 bx + 1, bx + 3,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=1 (a,b) ifft. */
+    planv[4] = fftwf_plan_guru_split_dft(
+                 1, dims, 1, vdims,
+                 ax + 1, ax + 0,
+                 bx + 1, bx + 0,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=1 (c,d) ifft. */
+    planv[5] = fftwf_plan_guru_split_dft(
+                 1, dims, 1, vdims,
+                 ax + 3, ax + 2,
+                 bx + 3, bx + 2,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (a,c) ifft. */
+    planv[6] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 1, vdims + 1,
+                 ax + 2, ax + 0,
+                 bx + 2, bx + 0,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (b,d) ifft. */
+    planv[7] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 1, vdims + 1,
+                 ax + 3, ax + 1,
+                 bx + 3, bx + 1,
+                 FFTW_MEASURE);
+
+    /* check that the plans were successfully created. */
+    if (!planv[0] || !planv[1] || !planv[2] || !planv[3] ||
+        !planv[4] || !planv[5] || !planv[6] || !planv[7])
+      return 0;
 
     /* free the temporary arrays. */
     arr_free2(a);
@@ -366,27 +451,27 @@ int arr_plans_init (int n1, int n2, int n3) {
     dims[0].os = 2;
 
     /* allocate the plan array. */
-    arr_planc = 2;
-    arr_planv = (fftwf_plan*) malloc(sizeof(fftwf_plan) * arr_planc);
-    if (!arr_planv)
+    planc = 2;
+    planv = (fftwf_plan*) malloc(sizeof(fftwf_plan) * planc);
+    if (!planv)
       return 0;
 
-    /* construct a plan for 1d fft */
-    arr_planv[0] = fftwf_plan_guru_split_dft(
-                     1, dims, 0, NULL,
-                     ax, ax + 1,
-                     bx, bx + 1,
-                     FFTW_MEASURE);
+    /* construct a plan for dim=1 (a,b) fft. */
+    planv[0] = fftwf_plan_guru_split_dft(
+                 1, dims, 0, NULL,
+                 ax + 0, ax + 1,
+                 bx + 0, bx + 1,
+                 FFTW_MEASURE);
 
-    /* construct a plan for 1d fft */
-    arr_planv[1] = fftwf_plan_guru_split_dft(
-                     1, dims, 0, NULL,
-                     ax + 1, ax,
-                     bx + 1, bx,
-                     FFTW_MEASURE);
+    /* construct a plan for dim=1 (a,b) ifft. */
+    planv[1] = fftwf_plan_guru_split_dft(
+                 1, dims, 0, NULL,
+                 ax + 1, ax + 0,
+                 bx + 1, bx + 0,
+                 FFTW_MEASURE);
 
-    /* check that the plan was successfully created. */
-    if (!arr_planv[0] || !arr_planv[1])
+    /* check that the plans were successfully created. */
+    if (!planv[0] || !planv[1])
       return 0;
 
     /* free the temporary arrays. */
@@ -411,12 +496,12 @@ void arr_plans_free (void) {
   int i;
 
   /* loop over the plans in the plan array. */
-  for (i = 0; i < arr_planc; i++)
-    fftwf_destroy_plan(arr_planv[i]);
+  for (i = 0; i < planc; i++)
+    fftwf_destroy_plan(planv[i]);
 
   /* free the plan array pointer. */
-  free(arr_planv);
-  arr_planc = 0;
+  free(planv);
+  planc = 0;
 }
 
 /* arr_fftfn1(): apply a fast Fourier transform to a
@@ -441,12 +526,12 @@ void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign) {
   switch (sign) {
     /* forward: */
     case FFTW_FORWARD:
-      fftwf_execute_split_dft(arr_planv[0], ax, ax + 1, bx, bx + 1);
+      fftwf_execute_split_dft(planv[0], ax + 0, ax + 1, bx + 0, bx + 1);
       break;
 
     /* backward: */
     case FFTW_BACKWARD:
-      fftwf_execute_split_dft(arr_planv[1], ax + 1, ax, bx + 1, bx);
+      fftwf_execute_split_dft(planv[1], ax + 1, ax + 0, bx + 1, bx + 0);
       break;
   }
 }
@@ -473,12 +558,18 @@ void arr_fftfn2 (arr2 *adest, arr2 *asrc, int sign) {
   switch (sign) {
     /* forward: */
     case FFTW_FORWARD:
-      /* FIXME: implement arr_fft2() */
+      fftwf_execute_split_dft(planv[0], ax + 0, ax + 1, bx + 0, bx + 1);
+      fftwf_execute_split_dft(planv[1], ax + 2, ax + 3, bx + 2, bx + 3);
+      fftwf_execute_split_dft(planv[2], ax + 0, ax + 2, bx + 0, bx + 2);
+      fftwf_execute_split_dft(planv[3], ax + 1, ax + 3, bx + 1, bx + 3);
       break;
 
     /* backward: */
     case FFTW_BACKWARD:
-      /* FIXME: implement arr_ifft2() */
+      fftwf_execute_split_dft(planv[4], ax + 1, ax + 0, bx + 1, bx + 0);
+      fftwf_execute_split_dft(planv[5], ax + 3, ax + 2, bx + 3, bx + 2);
+      fftwf_execute_split_dft(planv[6], ax + 2, ax + 0, bx + 2, bx + 0);
+      fftwf_execute_split_dft(planv[7], ax + 3, ax + 1, bx + 3, bx + 1);
       break;
   }
 }
