@@ -311,7 +311,7 @@ int arr_plans_init (int n1, int n2, int n3) {
    *  @vdims: vector size and stride data structure.
    *  @ax, @bx: pointers to raw coefficient data in @a and @b.
    */
-  fftwf_iodim dims[2], vdims[2];
+  fftwf_iodim dims[3], vdims[3];
   hx0 *ax, *bx;
 
   /* construct plans based on dimensionality. */
@@ -326,7 +326,52 @@ int arr_plans_init (int n1, int n2, int n3) {
     ax = (hx0*) a->x;
     bx = (hx0*) b->x;
 
-    /* FIXME: construct plans for 3d (i)fft */
+    /* FIXME: set up fftwf_iodim structures. */
+
+    /* allocate the plan array. */
+    planc = 24;
+    planv = (fftwf_plan*) malloc(sizeof(fftwf_plan) * planc);
+    if (!planv)
+      return 0;
+
+    /* FIXME construct a plan for dim=1 (a,b) fft. */
+    /* FIXME construct a plan for dim=1 (c,d) fft. */
+    /* FIXME construct a plan for dim=1 (e,f) fft. */
+    /* FIXME construct a plan for dim=1 (g,h) fft. */
+
+    /* FIXME construct a plan for dim=2 (a,c) fft. */
+    /* FIXME construct a plan for dim=2 (b,d) fft. */
+    /* FIXME construct a plan for dim=2 (e,g) fft. */
+    /* FIXME construct a plan for dim=2 (f,h) fft. */
+
+    /* FIXME construct a plan for dim=3 (a,e) fft. */
+    /* FIXME construct a plan for dim=3 (b,f) fft. */
+    /* FIXME construct a plan for dim=3 (c,g) fft. */
+    /* FIXME construct a plan for dim=3 (d,h) fft. */
+
+    /* FIXME construct a plan for dim=1 (a,b) ifft. */
+    /* FIXME construct a plan for dim=1 (c,d) ifft. */
+    /* FIXME construct a plan for dim=1 (e,f) ifft. */
+    /* FIXME construct a plan for dim=1 (g,h) ifft. */
+
+    /* FIXME construct a plan for dim=2 (a,c) ifft. */
+    /* FIXME construct a plan for dim=2 (b,d) ifft. */
+    /* FIXME construct a plan for dim=2 (e,g) ifft. */
+    /* FIXME construct a plan for dim=2 (f,h) ifft. */
+
+    /* FIXME construct a plan for dim=3 (a,e) ifft. */
+    /* FIXME construct a plan for dim=3 (b,f) ifft. */
+    /* FIXME construct a plan for dim=3 (c,g) ifft. */
+    /* FIXME construct a plan for dim=3 (d,h) ifft. */
+
+    /* check that the plans were successfully created. */
+    if (!planv[0]  || !planv[1]  || !planv[2]  || !planv[3]  ||
+        !planv[4]  || !planv[5]  || !planv[6]  || !planv[7]  ||
+        !planv[8]  || !planv[9]  || !planv[10] || !planv[11] ||
+        !planv[12] || !planv[13] || !planv[14] || !planv[15] ||
+        !planv[16] || !planv[17] || !planv[18] || !planv[19] ||
+        !planv[20] || !planv[21] || !planv[22] || !planv[23])
+      return 0;
 
     /* free the temporary arrays. */
     arr_free3(a);
@@ -526,11 +571,13 @@ void arr_fftfn1 (arr1 *adest, arr1 *asrc, int sign) {
   switch (sign) {
     /* forward: */
     case FFTW_FORWARD:
+      /* dim=1 (a,b) */
       fftwf_execute_split_dft(planv[0], ax + 0, ax + 1, bx + 0, bx + 1);
       break;
 
     /* backward: */
     case FFTW_BACKWARD:
+      /* dim=1 (a,b) */
       fftwf_execute_split_dft(planv[1], ax + 1, ax + 0, bx + 1, bx + 0);
       break;
   }
@@ -558,16 +605,22 @@ void arr_fftfn2 (arr2 *adest, arr2 *asrc, int sign) {
   switch (sign) {
     /* forward: */
     case FFTW_FORWARD:
+      /* dim=1 (a,b),(c,d) */
       fftwf_execute_split_dft(planv[0], ax + 0, ax + 1, bx + 0, bx + 1);
       fftwf_execute_split_dft(planv[1], ax + 2, ax + 3, bx + 2, bx + 3);
+
+      /* dim=2 (a,c),(b,d) */
       fftwf_execute_split_dft(planv[2], bx + 0, bx + 2, bx + 0, bx + 2);
       fftwf_execute_split_dft(planv[3], bx + 1, bx + 3, bx + 1, bx + 3);
       break;
 
     /* backward: */
     case FFTW_BACKWARD:
+      /* dim=1 (a,b),(c,d) */
       fftwf_execute_split_dft(planv[4], ax + 1, ax + 0, bx + 1, bx + 0);
       fftwf_execute_split_dft(planv[5], ax + 3, ax + 2, bx + 3, bx + 2);
+
+      /* dim=2 (a,c),(b,d) */
       fftwf_execute_split_dft(planv[6], bx + 2, bx + 0, bx + 2, bx + 0);
       fftwf_execute_split_dft(planv[7], bx + 3, bx + 1, bx + 3, bx + 1);
       break;
@@ -596,12 +649,16 @@ void arr_fftfn3 (arr3 *adest, arr3 *asrc, int sign) {
   switch (sign) {
     /* forward: */
     case FFTW_FORWARD:
-      /* FIXME: implement arr_fft3() */
+      /* FIXME dim=1 (a,b),(c,d),(e,f),(g,h) */
+      /* FIXME dim=2 (a,c),(b,d),(e,g),(f,h) */
+      /* FIXME dim=3 (a,e),(b,f),(c,g),(d,h) */
       break;
 
     /* backward: */
     case FFTW_BACKWARD:
-      /* FIXME: implement arr_ifft3() */
+      /* FIXME dim=1 (a,b),(c,d),(e,f),(g,h) */
+      /* FIXME dim=2 (a,c),(b,d),(e,g),(f,h) */
+      /* FIXME dim=3 (a,e),(b,f),(c,g),(d,h) */
       break;
   }
 }
