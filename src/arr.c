@@ -311,7 +311,7 @@ int arr_plans_init (int n1, int n2, int n3) {
    *  @vdims: vector size and stride data structure.
    *  @ax, @bx: pointers to raw coefficient data in @a and @b.
    */
-  fftwf_iodim dims[3], vdims[3];
+  fftwf_iodim dims[3], vdims[6];
   hx0 *ax, *bx;
 
   /* construct plans based on dimensionality. */
@@ -326,7 +326,35 @@ int arr_plans_init (int n1, int n2, int n3) {
     ax = (hx0*) a->x;
     bx = (hx0*) b->x;
 
-    /* FIXME: set up fftwf_iodim structures. */
+    /* initialize the first-dimension transform size. */
+    dims[0].n = n1;
+    dims[0].is = dims[0].os = 8;
+
+    /* initialize the second-dimension transform size. */
+    dims[1].n = n2;
+    dims[1].is = dims[1].os = 8 * n1;
+
+    /* initialize the third-dimension transform size. */
+    dims[2].n = n3;
+    dims[2].is = dims[2].os = 8 * n1 * n2;
+
+    /* initialize the first-dimension vector size. */
+    vdims[0].n = n2;
+    vdims[1].n = n3;
+    vdims[0].is = vdims[0].os = 8 * n1;
+    vdims[1].is = vdims[1].os = 8 * n1 * n2;
+
+    /* initialize the first-dimension vector size. */
+    vdims[2].n = n1;
+    vdims[3].n = n3;
+    vdims[2].is = vdims[2].os = 8;
+    vdims[3].is = vdims[3].os = 8 * n1 * n2;
+
+    /* initialize the third-dimension vector size. */
+    vdims[4].n = n1;
+    vdims[5].n = n2;
+    vdims[4].is = vdims[4].os = 8;
+    vdims[5].is = vdims[5].os = 8 * n1;
 
     /* allocate the plan array. */
     planc = 24;
@@ -390,23 +418,19 @@ int arr_plans_init (int n1, int n2, int n3) {
 
     /* initialize the first-dimension transform size. */
     dims[0].n = n1;
-    dims[0].is = 4;
-    dims[0].os = 4;
+    dims[0].is = dims[0].os = 4;
 
     /* initialize the second-dimension transform size. */
     dims[1].n = n2;
-    dims[1].is = 4 * n1;
-    dims[1].os = 4 * n1;
+    dims[1].is = dims[1].os = 4 * n1;
 
     /* initialize the first-dimension vector size. */
     vdims[0].n = n2;
-    vdims[0].is = 4 * n1;
-    vdims[0].os = 4 * n1;
+    vdims[0].is = vdims[0].os = 4 * n1;
 
     /* initialize the second-dimension vector size. */
     vdims[1].n = n1;
-    vdims[1].is = 4;
-    vdims[1].os = 4;
+    vdims[1].is = vdims[1].os = 4;
 
     /* allocate the plan array. */
     planc = 8;
@@ -492,8 +516,7 @@ int arr_plans_init (int n1, int n2, int n3) {
 
     /* initialize the transform size. */
     dims[0].n = n1;
-    dims[0].is = 2;
-    dims[0].os = 2;
+    dims[0].is = dims[0].os = 2;
 
     /* allocate the plan array. */
     planc = 2;
