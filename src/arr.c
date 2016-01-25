@@ -362,35 +362,173 @@ int arr_plans_init (int n1, int n2, int n3) {
     if (!planv)
       return 0;
 
-    /* FIXME construct a plan for dim=1 (a,b) fft. */
-    /* FIXME construct a plan for dim=1 (c,d) fft. */
-    /* FIXME construct a plan for dim=1 (e,f) fft. */
-    /* FIXME construct a plan for dim=1 (g,h) fft. */
+    /* construct a plan for dim=1 (a,b) fft. */
+    planv[0] = fftwf_plan_guru_split_dft(
+                 1, dims, 2, vdims,
+                 ax + 0, ax + 1,
+                 bx + 0, bx + 1,
+                 FFTW_MEASURE);
 
-    /* FIXME construct a plan for dim=2 (a,c) fft. */
-    /* FIXME construct a plan for dim=2 (b,d) fft. */
-    /* FIXME construct a plan for dim=2 (e,g) fft. */
-    /* FIXME construct a plan for dim=2 (f,h) fft. */
+    /* construct a plan for dim=1 (c,d) fft. */
+    planv[1] = fftwf_plan_guru_split_dft(
+                 1, dims, 2, vdims,
+                 ax + 2, ax + 3,
+                 bx + 2, bx + 3,
+                 FFTW_MEASURE);
 
-    /* FIXME construct a plan for dim=3 (a,e) fft. */
-    /* FIXME construct a plan for dim=3 (b,f) fft. */
-    /* FIXME construct a plan for dim=3 (c,g) fft. */
-    /* FIXME construct a plan for dim=3 (d,h) fft. */
+    /* construct a plan for dim=1 (e,f) fft. */
+    planv[2] = fftwf_plan_guru_split_dft(
+                 1, dims, 2, vdims,
+                 ax + 4, ax + 5,
+                 bx + 4, bx + 5,
+                 FFTW_MEASURE);
 
-    /* FIXME construct a plan for dim=1 (a,b) ifft. */
-    /* FIXME construct a plan for dim=1 (c,d) ifft. */
-    /* FIXME construct a plan for dim=1 (e,f) ifft. */
-    /* FIXME construct a plan for dim=1 (g,h) ifft. */
+    /* construct a plan for dim=1 (g,h) fft. */
+    planv[3] = fftwf_plan_guru_split_dft(
+                 1, dims, 2, vdims,
+                 ax + 6, ax + 7,
+                 bx + 6, bx + 7,
+                 FFTW_MEASURE);
 
-    /* FIXME construct a plan for dim=2 (a,c) ifft. */
-    /* FIXME construct a plan for dim=2 (b,d) ifft. */
-    /* FIXME construct a plan for dim=2 (e,g) ifft. */
-    /* FIXME construct a plan for dim=2 (f,h) ifft. */
+    /* construct a plan for dim=2 (a,c) fft. */
+    planv[4] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 2, vdims + 2,
+                 bx + 0, bx + 2,
+                 bx + 0, bx + 2,
+                 FFTW_MEASURE);
 
-    /* FIXME construct a plan for dim=3 (a,e) ifft. */
-    /* FIXME construct a plan for dim=3 (b,f) ifft. */
-    /* FIXME construct a plan for dim=3 (c,g) ifft. */
-    /* FIXME construct a plan for dim=3 (d,h) ifft. */
+    /* construct a plan for dim=2 (b,d) fft. */
+    planv[5] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 2, vdims + 2,
+                 bx + 1, bx + 3,
+                 bx + 1, bx + 3,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (e,g) fft. */
+    planv[6] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 2, vdims + 2,
+                 bx + 4, bx + 6,
+                 bx + 4, bx + 6,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (f,h) fft. */
+    planv[7] = fftwf_plan_guru_split_dft(
+                 1, dims + 1, 2, vdims + 2,
+                 bx + 5, bx + 7,
+                 bx + 5, bx + 7,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (a,e) fft. */
+    planv[8] = fftwf_plan_guru_split_dft(
+                 1, dims + 2, 2, vdims + 4,
+                 bx + 0, bx + 4,
+                 bx + 0, bx + 4,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (b,f) fft. */
+    planv[9] = fftwf_plan_guru_split_dft(
+                 1, dims + 2, 2, vdims + 4,
+                 bx + 1, bx + 5,
+                 bx + 1, bx + 5,
+                 FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (c,g) fft. */
+    planv[10] = fftwf_plan_guru_split_dft(
+                  1, dims + 2, 2, vdims + 4,
+                  bx + 2, bx + 6,
+                  bx + 2, bx + 6,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (d,h) fft. */
+    planv[11] = fftwf_plan_guru_split_dft(
+                  1, dims + 2, 2, vdims + 4,
+                  bx + 3, bx + 7,
+                  bx + 3, bx + 7,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=1 (a,b) ifft. */
+    planv[12] = fftwf_plan_guru_split_dft(
+                  1, dims, 2, vdims,
+                  ax + 1, ax + 0,
+                  bx + 1, bx + 0,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=1 (c,d) ifft. */
+    planv[13] = fftwf_plan_guru_split_dft(
+                  1, dims, 2, vdims,
+                  ax + 3, ax + 2,
+                  bx + 3, bx + 2,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=1 (e,f) ifft. */
+    planv[14] = fftwf_plan_guru_split_dft(
+                  1, dims, 2, vdims,
+                  ax + 5, ax + 4,
+                  bx + 5, bx + 4,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=1 (g,h) ifft. */
+    planv[15] = fftwf_plan_guru_split_dft(
+                  1, dims, 2, vdims,
+                  ax + 7, ax + 6,
+                  bx + 7, bx + 6,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (a,c) ifft. */
+    planv[16] = fftwf_plan_guru_split_dft(
+                  1, dims + 1, 2, vdims + 2,
+                  bx + 2, bx + 0,
+                  bx + 2, bx + 0,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (b,d) ifft. */
+    planv[17] = fftwf_plan_guru_split_dft(
+                  1, dims + 1, 2, vdims + 2,
+                  bx + 3, bx + 1,
+                  bx + 3, bx + 1,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (e,g) ifft. */
+    planv[18] = fftwf_plan_guru_split_dft(
+                  1, dims + 1, 2, vdims + 2,
+                  bx + 6, bx + 4,
+                  bx + 6, bx + 4,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=2 (f,h) ifft. */
+    planv[19] = fftwf_plan_guru_split_dft(
+                  1, dims + 1, 2, vdims + 2,
+                  bx + 7, bx + 5,
+                  bx + 7, bx + 5,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (a,e) ifft. */
+    planv[20] = fftwf_plan_guru_split_dft(
+                  1, dims + 2, 2, vdims + 4,
+                  bx + 4, bx + 0,
+                  bx + 4, bx + 0,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (b,f) ifft. */
+    planv[21] = fftwf_plan_guru_split_dft(
+                  1, dims + 2, 2, vdims + 4,
+                  bx + 5, bx + 1,
+                  bx + 5, bx + 1,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (c,g) ifft. */
+    planv[22] = fftwf_plan_guru_split_dft(
+                  1, dims + 2, 2, vdims + 4,
+                  bx + 6, bx + 2,
+                  bx + 6, bx + 2,
+                  FFTW_MEASURE);
+
+    /* construct a plan for dim=3 (d,h) ifft. */
+    planv[23] = fftwf_plan_guru_split_dft(
+                  1, dims + 2, 2, vdims + 4,
+                  bx + 7, bx + 3,
+                  bx + 7, bx + 3,
+                  FFTW_MEASURE);
 
     /* check that the plans were successfully created. */
     if (!planv[0]  || !planv[1]  || !planv[2]  || !planv[3]  ||
@@ -672,16 +810,44 @@ void arr_fftfn3 (arr3 *adest, arr3 *asrc, int sign) {
   switch (sign) {
     /* forward: */
     case FFTW_FORWARD:
-      /* FIXME dim=1 (a,b),(c,d),(e,f),(g,h) */
-      /* FIXME dim=2 (a,c),(b,d),(e,g),(f,h) */
-      /* FIXME dim=3 (a,e),(b,f),(c,g),(d,h) */
+      /* dim=1 (a,b),(c,d),(e,f),(g,h) */
+      fftwf_execute_split_dft(planv[0], ax + 0, ax + 1, bx + 0, bx + 1);
+      fftwf_execute_split_dft(planv[1], ax + 2, ax + 3, bx + 2, bx + 3);
+      fftwf_execute_split_dft(planv[2], ax + 4, ax + 5, bx + 4, bx + 5);
+      fftwf_execute_split_dft(planv[3], ax + 6, ax + 7, bx + 6, bx + 7);
+
+      /* dim=2 (a,c),(b,d),(e,g),(f,h) */
+      fftwf_execute_split_dft(planv[4], bx + 0, bx + 2, bx + 0, bx + 2);
+      fftwf_execute_split_dft(planv[5], bx + 1, bx + 3, bx + 1, bx + 3);
+      fftwf_execute_split_dft(planv[6], bx + 4, bx + 6, bx + 4, bx + 6);
+      fftwf_execute_split_dft(planv[7], bx + 5, bx + 7, bx + 5, bx + 7);
+
+      /* dim=3 (a,e),(b,f),(c,g),(d,h) */
+      fftwf_execute_split_dft(planv[8],  bx + 0, bx + 4, bx + 0, bx + 4);
+      fftwf_execute_split_dft(planv[9],  bx + 1, bx + 5, bx + 1, bx + 5);
+      fftwf_execute_split_dft(planv[10], bx + 2, bx + 6, bx + 2, bx + 6);
+      fftwf_execute_split_dft(planv[11], bx + 3, bx + 7, bx + 3, bx + 7);
       break;
 
     /* backward: */
     case FFTW_BACKWARD:
-      /* FIXME dim=1 (a,b),(c,d),(e,f),(g,h) */
-      /* FIXME dim=2 (a,c),(b,d),(e,g),(f,h) */
-      /* FIXME dim=3 (a,e),(b,f),(c,g),(d,h) */
+      /* dim=1 (a,b),(c,d),(e,f),(g,h) */
+      fftwf_execute_split_dft(planv[12], ax + 1, ax + 0, bx + 1, bx + 0);
+      fftwf_execute_split_dft(planv[13], ax + 3, ax + 2, bx + 3, bx + 2);
+      fftwf_execute_split_dft(planv[14], ax + 5, ax + 4, bx + 5, bx + 4);
+      fftwf_execute_split_dft(planv[15], ax + 7, ax + 6, bx + 7, bx + 6);
+
+      /* dim=2 (a,c),(b,d),(e,g),(f,h) */
+      fftwf_execute_split_dft(planv[16], bx + 2, bx + 0, bx + 2, bx + 0);
+      fftwf_execute_split_dft(planv[17], bx + 3, bx + 1, bx + 3, bx + 1);
+      fftwf_execute_split_dft(planv[18], bx + 6, bx + 4, bx + 6, bx + 4);
+      fftwf_execute_split_dft(planv[19], bx + 7, bx + 5, bx + 7, bx + 5);
+
+      /* dim=3 (a,e),(b,f),(c,g),(d,h) */
+      fftwf_execute_split_dft(planv[20], bx + 4, bx + 0, bx + 4, bx + 0);
+      fftwf_execute_split_dft(planv[21], bx + 5, bx + 1, bx + 5, bx + 1);
+      fftwf_execute_split_dft(planv[22], bx + 6, bx + 2, bx + 6, bx + 2);
+      fftwf_execute_split_dft(planv[23], bx + 7, bx + 3, bx + 7, bx + 3);
       break;
   }
 }
