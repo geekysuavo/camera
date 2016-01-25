@@ -28,6 +28,12 @@ reconstructions in parallel. Running **camera** requires only trivial
 changes to standard nmrPipe processing workflows, and execution times
 rival those of RNMRTK MaxEnt and NESTA-NMR.
 
+As of 30 Jan 2016, **camera** utilizes the [FFTW](http://www.fftw.org)
+library for all its fast Fourier transforms. This means:
+
+ * Data are no longer limited to power-of-two sizes.
+ * Reconstructions will be up to _3x_ faster.
+
 ### Reconstructing NMR data
 
 The **camera** algorithm and software supports all the trimmings of MEM,
@@ -38,7 +44,7 @@ in the [data](data/) subdirectory.
 
 ### Installing and Running
 
-The **camera** utility is written in C99-compliant source code, and only
+The **camera** utility is written in C99-compliant source code, and
 requires a compiler with OpenMP support. Use of the
 [GNU Compiler Collection] (http://gcc.gnu.org) version 4.9 or later
 is recommended.
@@ -52,7 +58,9 @@ make
 sudo make install
 ```
 
-A recent processor that supports
+When compiling **camera** from source, the [FFTW](http://www.fftw.org)
+development headers and libraries must be installed. A recent processor
+that supports
 [SSE] (https://en.wikipedia.org/wiki/Streaming_SIMD_Extensions),
 [SSE2] (https://en.wikipedia.org/wiki/SSE2), and
 [SSE3] (https://en.wikipedia.org/wiki/SSE3) is required to
