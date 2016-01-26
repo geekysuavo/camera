@@ -26,7 +26,8 @@ and manipulate hypercomplex numbers, as well as the
 [OpenMP API](https://en.wikipedia.org/wiki/OpenMP) to execute independent
 reconstructions in parallel. Running **camera** requires only trivial
 changes to standard nmrPipe processing workflows, and execution times
-rival those of RNMRTK MaxEnt and NESTA-NMR.
+rival those of [RNMRTK](http://rnmrtk.uchc.edu) MaxEnt and
+[NESTA-NMR](http://www.nestanmr.com).
 
 As of 26 Jan 2016, **camera** utilizes the [FFTW](http://www.fftw.org)
 library for all its fast Fourier transforms. This means:
