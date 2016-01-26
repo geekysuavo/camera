@@ -28,7 +28,7 @@ reconstructions in parallel. Running **camera** requires only trivial
 changes to standard nmrPipe processing workflows, and execution times
 rival those of RNMRTK MaxEnt and NESTA-NMR.
 
-As of 30 Jan 2016, **camera** utilizes the [FFTW](http://www.fftw.org)
+As of 26 Jan 2016, **camera** utilizes the [FFTW](http://www.fftw.org)
 library for all its fast Fourier transforms. This means:
 
  * Data are no longer limited to power-of-two sizes.
