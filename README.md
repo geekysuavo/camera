@@ -6,7 +6,7 @@ solver for the maximum entropy (MaxEnt) objective function. The
 fundamental principles of the **camera** utility are published in:
 
 > Worley, B., _Convex Accelerated Maximum Entropy Reconstruction_,
-> Journal of Magnetic Resonance, 2016, Under review.
+> Journal of Magnetic Resonance, 2016, Accepted.
 
 ## Introduction
 

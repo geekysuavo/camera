@@ -59,7 +59,7 @@
    -help     Print this help message.\n\
 \n\
  Citation:\n\
-   B. Worley, J. Magn. Reson., 2016, Under review.\n\n"
+   B. Worley, J. Magn. Reson., 2016, Accepted.\n\n"
 
 /* nextpow2(): compute the smallest power of two that is not less
  * than a given value.
