@@ -203,6 +203,10 @@ hx1 hx_grad1 (hx1 x, hx0 L) {
   hx0 xnrm = hx_sqrt0(hx_sumsq1(x));
   hx0 lx = L * xnrm;
 
+  /* return zero gradient if the scalar has zero norm. */
+  if (xnrm == 0.0f)
+    return x;
+
   /* compute the gradient scaling factor. */
   hx0 a = hx_log0(lx + hx_sqrt0(1.0f + lx * lx)) / xnrm;
 
@@ -225,6 +229,10 @@ hx2 hx_grad2 (hx2 x, hx0 L) {
   hx0 xnrm = hx_sqrt0(hx_sumsq2(x));
   hx0 lx = L * xnrm;
 
+  /* return zero gradient if the scalar has zero norm. */
+  if (xnrm == 0.0f)
+    return x;
+
   /* compute the gradient scaling factor. */
   hx0 a = hx_log0(lx + hx_sqrt0(1.0f + lx * lx)) / xnrm;
 
@@ -246,6 +254,10 @@ hx3 hx_grad3 (hx3 x, hx0 L) {
   /* compute the norm of the scalar value. */
   hx0 xnrm = hx_sqrt0(hx_sumsq3(x));
   hx0 lx = L * xnrm;
+
+  /* return zero gradient if the scalar has zero norm. */
+  if (xnrm == 0.0f)
+    return x;
 
   /* compute the gradient scaling factor. */
   hx0 a = hx_log0(lx + hx_sqrt0(1.0f + lx * lx)) / xnrm;
