@@ -47,7 +47,7 @@ in the [data](data/) subdirectory.
 
 The **camera** utility is written in C99-compliant source code, and
 requires a compiler with OpenMP support. Use of the
-[GNU Compiler Collection] (http://gcc.gnu.org) version 4.9 or later
+[GNU Compiler Collection](http://gcc.gnu.org) version 4.9 or later
 is recommended.
 
 You can compile and install **camera** as follows:
@@ -62,11 +62,11 @@ sudo make install
 When compiling **camera** from source, the [FFTW](http://www.fftw.org)
 development headers and libraries must be installed. A recent processor
 that supports
-[SSE] (https://en.wikipedia.org/wiki/Streaming_SIMD_Extensions),
-[SSE2] (https://en.wikipedia.org/wiki/SSE2), and
-[SSE3] (https://en.wikipedia.org/wiki/SSE3) is required to
+[SSE](https://en.wikipedia.org/wiki/Streaming_SIMD_Extensions),
+[SSE2](https://en.wikipedia.org/wiki/SSE2), and
+[SSE3](https://en.wikipedia.org/wiki/SSE3) is required to
 run **camera**, and support for
-[AVX] (https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) is
+[AVX](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) is
 highly recommended for reconstructing 3D and 4D datasets. If you have a
 processor that supports AVX, you will need to set USE_AVX to **y** in the
 Makefile prior to running _make_ and _make install_ above. Or, you can run
@@ -90,7 +90,7 @@ sudo make install
 ## Licensing
 
 This project is released under the
-[GNU GPL 3.0] (http://www.gnu.org/licenses/gpl-3.0.txt).
+[GNU GPL 3.0](http://www.gnu.org/licenses/gpl-3.0.txt).
 
 Have fun with it,
 
